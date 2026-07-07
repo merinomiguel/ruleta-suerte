@@ -901,7 +901,8 @@
     };
     const online = {
       enabled: false, connected: false, socket: null, roomCode: "", playerIndex: null,
-      isHost: false, applyingRemote: false, started: false, players: [], token: ""
+      isHost: false, applyingRemote: false, started: false, players: [], token: "",
+      pendingOpenActions: [], autoRejoining: false
     };
     let audioContext=null, soundEnabled=true;
 
@@ -988,6 +989,12 @@
       if (code) safeStorageSet("ruletaLastRoom",code);
       if (token) safeStorageSet("ruletaPlayerToken",token);
     }
+    function rememberedRoomCode() {
+      return safeStorageGet("ruletaLastRoom").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+    }
+    function rememberedPlayerToken() {
+      return safeStorageGet("ruletaPlayerToken").replace(/[^a-zA-Z0-9-]/g,"").slice(0,80);
+    }
 
     function setOnlineStatus(text,type="") {
       const el=$("onlineStatus"); el.innerHTML=text; el.className=`online-status ${type}`.trim();
@@ -1044,14 +1051,25 @@
     }
     function connectOnline(onOpen) {
       if (online.socket && online.socket.readyState===WebSocket.OPEN) { onOpen(); return; }
-      if (online.socket && online.socket.readyState===WebSocket.CONNECTING) return;
+      if (online.socket && online.socket.readyState===WebSocket.CONNECTING) {
+        if (onOpen) online.pendingOpenActions.push(onOpen);
+        return;
+      }
+      online.pendingOpenActions = onOpen ? [onOpen] : [];
       setOnlineStatus("Conectando con el servidor…");
       const socket=new WebSocket(wsUrl()); online.socket=socket;
-      socket.addEventListener("open",()=>{ online.connected=true; onOpen(); });
+      socket.addEventListener("open",()=>{
+        online.connected=true;
+        const actions=[...online.pendingOpenActions];
+        online.pendingOpenActions=[];
+        actions.forEach(action=>action());
+      });
       socket.addEventListener("message",event=>handleOnlineMessage(JSON.parse(event.data)));
       socket.addEventListener("close",()=>{
         online.connected=false;
-        if (online.enabled && !state.finished) setStatus("Conexión online perdida. Puedes recargar e intentar entrar de nuevo.","bad");
+        online.socket=null;
+        online.pendingOpenActions=[];
+        if (online.enabled && !state.finished) setStatus("Conexión online perdida. Recarga y volverás a entrar automáticamente.","bad");
         if (!online.started) setOnlineStatus("No hay conexión con el servidor. Arranca Node y entra por http://localhost:3000","bad");
       });
       socket.addEventListener("error",()=>setOnlineStatus("No puedo conectar. Asegúrate de ejecutar `npm start` y abrir http://localhost:3000","bad"));
@@ -1069,11 +1087,16 @@
     function joinRoom() {
       const name=$("onlineName").value.trim()||"Jugador 2";
       const code=$("roomCodeInput").value.trim().toUpperCase();
+      joinRoomByCode(code,name);
+    }
+    function joinRoomByCode(code,name,auto=false) {
       if (!code) { setOnlineStatus("Escribe el código de sala para entrar.","bad"); return; }
       if (online.roomCode===code) { setOnlineStatus(`Ya estás dentro de la sala ${roomCodeMarkup(code)}.`, "good"); return; }
       if (online.roomCode) { setOnlineStatus(`Ya estás en la sala ${roomCodeMarkup(online.roomCode)}. Recarga para cambiar de sala.`, "bad"); return; }
       safeStorageSet("ruletaPlayerName",name);
       online.token=getPlayerToken();
+      online.autoRejoining=auto;
+      if (auto) setOnlineStatus(`Reconectando automáticamente a la sala ${roomCodeMarkup(code)}…`, "good");
       connectOnline(()=>sendOnline({type:"join_room",code,name,token:online.token}));
     }
     function handleOnlineMessage(message) {
@@ -1087,7 +1110,10 @@
       if (message.type==="room_joined") {
         online.enabled=true; online.isHost=Boolean(message.isHost); online.started=Boolean(message.started); online.roomCode=message.code; online.playerIndex=message.playerIndex; online.players=message.players;
         online.token=message.token||online.token; rememberOnlineSeat(message.code,online.token);
-        setOnlineStatus(`Has entrado en la sala ${roomCodeMarkup(message.code)} como Jugador ${message.playerIndex+1}.`, "good");
+        setOnlineStatus(online.autoRejoining
+          ? `Has vuelto a la sala ${roomCodeMarkup(message.code)} como Jugador ${message.playerIndex+1}.`
+          : `Has entrado en la sala ${roomCodeMarkup(message.code)} como Jugador ${message.playerIndex+1}.`, "good");
+        online.autoRejoining=false;
         $("roomCodeInput").value=message.code; updateRoomTools();
         updateOnlineLobby(message.players);
         if (message.state) applyOnlineSnapshot(message.state);
@@ -1101,7 +1127,7 @@
       if (message.type==="snapshot") {
         online.started=true; applyOnlineSnapshot(message.state);
       }
-      if (message.type==="error") setOnlineStatus(message.message,"bad");
+      if (message.type==="error") { online.autoRejoining=false; setOnlineStatus(message.message,"bad"); }
       if (message.type==="peer_left") {
         online.players=message.players||online.players;
         if (!online.started) updateOnlineLobby(online.players);
@@ -1543,12 +1569,18 @@
     }
     function initSharedRoom() {
       const params=new URLSearchParams(location.search), code=(params.get("sala")||params.get("room")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
-      const remembered=safeStorageGet("ruletaLastRoom").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+      const remembered=rememberedRoomCode();
+      const rememberedToken=rememberedPlayerToken();
       const rememberedName=safeStorageGet("ruletaPlayerName");
       if (rememberedName) $("onlineName").value=rememberedName;
       const target=code||remembered;
       if (!target) return;
       $("roomCodeInput").value=target;
+      const canAutoRejoin=rememberedToken && remembered && target===remembered;
+      if (canAutoRejoin) {
+        joinRoomByCode(target,rememberedName||$("onlineName").value.trim()||"Jugador",true);
+        return;
+      }
       if (code) setOnlineStatus(`Código ${roomCodeMarkup(code)} detectado en el enlace. Escribe tu nombre y pulsa Entrar.`, "good");
       else setOnlineStatus(`Tienes una sala reciente: ${roomCodeMarkup(target)}. Pulsa Entrar para reconectar a tu puesto.`, "good");
     }
