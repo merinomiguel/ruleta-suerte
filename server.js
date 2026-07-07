@@ -67,6 +67,13 @@ function findRoomForSocket(socket) {
 
 const server = http.createServer((req, res) => {
   const rawPath = decodeURIComponent(req.url.split("?")[0]);
+
+  if (rawPath === "/healthz") {
+    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("ok");
+    return;
+  }
+
   const safePath = rawPath === "/" ? "/index.html" : rawPath;
   const filePath = path.normalize(path.join(PUBLIC_DIR, safePath));
 
@@ -99,12 +106,23 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 
 wss.on("connection", socket => {
+  socket.isAlive = true;
+
+  socket.on("pong", () => {
+    socket.isAlive = true;
+  });
+
   socket.on("message", raw => {
     let message;
     try {
       message = JSON.parse(raw.toString());
     } catch {
       send(socket, { type: "error", message: "Mensaje no válido." });
+      return;
+    }
+
+    if (message.type === "ping") {
+      send(socket, { type: "pong", time: Date.now() });
       return;
     }
 
@@ -205,6 +223,17 @@ wss.on("connection", socket => {
     broadcastRoomUpdate(room);
   });
 });
+
+setInterval(() => {
+  wss.clients.forEach(socket => {
+    if (socket.isAlive === false) {
+      socket.terminate();
+      return;
+    }
+    socket.isAlive = false;
+    socket.ping();
+  });
+}, 25 * 1000);
 
 setInterval(() => {
   const now = Date.now();

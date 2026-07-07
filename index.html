@@ -199,6 +199,28 @@
     .status.good { color: #9ff4c4; border-color: rgba(84,229,154,.45); }
     .status.bad { color: #ff9daa; border-color: rgba(255,83,100,.45); }
     .status.spin-result { color: #ffe583; border-color: rgba(255,213,61,.55); }
+    .remote-banner {
+      margin: -2px auto 10px; width: min(520px, 100%); padding: 9px 13px; border-radius: 999px;
+      text-align: center; color: #aef7f4; background: rgba(77,230,226,.1); border: 1px solid rgba(77,230,226,.34);
+      font-size: .76rem; font-weight: 950; letter-spacing: .06em; text-transform: uppercase;
+      animation: waitingPulse 1s ease-in-out infinite alternate;
+    }
+    @keyframes waitingPulse { to { opacity: .72; transform: scale(.99); } }
+    .turn-timer {
+      width: min(340px, 78vw); margin: 0 auto 9px; display: grid; grid-template-columns: auto 1fr auto;
+      align-items: center; gap: 9px; color: #dfe4fa; font-size: .68rem; font-weight: 1000; letter-spacing: .1em;
+    }
+    .timer-track {
+      height: 10px; overflow: hidden; border-radius: 999px; background: #0a102b;
+      border: 1px solid rgba(255,255,255,.2); box-shadow: inset 0 2px 5px rgba(0,0,0,.45);
+    }
+    .timer-fill {
+      width: 100%; height: 100%; border-radius: inherit;
+      background: linear-gradient(90deg, #54e59a 0%, #ffd53d 62%, #ff5364 100%);
+      transition: width .16s linear;
+    }
+    .turn-timer.danger .timer-fill { background: linear-gradient(90deg, #ff9f1c, #ff5364); box-shadow: 0 0 12px rgba(255,83,100,.65); }
+    .turn-timer.paused { opacity: .55; }
 
     /* Ruleta */
     .wheel-zone { position: relative; width: min(340px, 78vw); margin: 0 auto 8px; user-select: none; }
@@ -232,7 +254,8 @@
     .choice-panel { margin: 12px auto 0; padding: 15px; max-width: 620px; text-align: center; background: var(--panel); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; }
     .choice-panel p { margin: 0 0 10px; font-weight: 850; }
     .keyboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; }
-    .key { min-width: 38px; border: 1px solid #4c5d97; border-radius: 8px; padding: 9px 10px; color: white; background: #23305f; font-weight: 1000; }
+    .key { min-width: 38px; border: 1px solid #4c5d97; border-radius: 8px; padding: 9px 10px; color: white; background: #23305f; font-weight: 1000; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+    .key:disabled { opacity: .58; transform: scale(.96); }
     .key:hover { background: var(--cyan); color: #061b25; }
     .key.vowel { background: #6c3ea3; border-color: #9a69d6; }
     .modal-backdrop { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(1,3,12,.8); backdrop-filter: blur(8px); }
@@ -356,8 +379,8 @@
       .clue-wrap { flex: 0 0 auto; margin-bottom: 4px; }
       .clue-label { font-size: .48rem; letter-spacing: .14em; }
       #clue {
-        margin-top: 2px; font-size: clamp(.78rem, 3.3vw, .95rem); line-height: 1.08;
-        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        margin-top: 2px; font-size: clamp(.76rem, 3.15vw, .92rem); line-height: 1.08;
+        display: block; overflow: visible;
       }
       .jackpot { flex: 0 0 auto; margin: 2px auto 4px; padding: 5px 12px; font-size: .78rem; border-width: 1px; }
       .jackpot.compact { padding: 4px 10px; font-size: .68rem; }
@@ -382,14 +405,17 @@
         flex: 0 0 auto; min-height: 34px; max-height: 44px; overflow: hidden;
         margin: 5px 0; padding: 6px 9px; border-radius: 10px; font-size: .68rem; line-height: 1.15;
       }
-      .wheel-zone { flex: 0 0 auto; width: min(230px, 31dvh, 65vw); margin-bottom: 1px; }
+      .remote-banner { flex: 0 0 auto; margin: -1px auto 4px; padding: 6px 10px; font-size: .55rem; width: min(300px, 96%); }
+      .turn-timer { flex: 0 0 auto; width: min(300px, 76vw); margin-bottom: 4px; gap: 7px; font-size: .54rem; }
+      .timer-track { height: 8px; }
+      .wheel-zone { flex: 0 0 auto; width: min(304px, 37dvh, 78vw); margin-bottom: 1px; }
       .pointer { top: -2px; border-left-width: 10px; border-right-width: 10px; border-top-width: 22px; }
       #wheel { filter: drop-shadow(0 8px 13px rgba(0,0,0,.42)); }
-      #wheel text { font-size: 7px; stroke-width: 1.2px; }
-      .wheel-center { border-width: 3px; font-size: .44rem; }
-      .wheel-center small { font-size: .34rem; }
+      #wheel text { font-size: 8.8px; stroke-width: 1.25px; }
+      .wheel-center { border-width: 3px; font-size: .5rem; }
+      .wheel-center small { font-size: .38rem; }
       .spin-hint { flex: 0 0 auto; margin: 1px 0 3px; font-size: .56rem; letter-spacing: .02em; line-height: 1.1; }
-      .power-meter { flex: 0 0 auto; width: min(230px, 31dvh, 65vw); margin-bottom: 5px; }
+      .power-meter { flex: 0 0 auto; width: min(300px, 76vw); margin-bottom: 5px; }
       .power-label { margin-bottom: 2px; font-size: .52rem; }
       .power-track { height: 8px; }
       .actions { flex: 0 0 auto; gap: 6px; flex-wrap: nowrap; }
@@ -408,7 +434,7 @@
       }
       .choice-panel p { margin-bottom: 7px; font-size: .72rem; }
       .keyboard { gap: 5px; }
-      .key { min-width: 28px; padding: 6px 7px; border-radius: 7px; font-size: .76rem; }
+      .key { min-width: 36px; min-height: 34px; padding: 7px 9px; border-radius: 9px; font-size: .84rem; }
     }
     @media (max-width: 520px) {
       .name-grid { grid-template-columns: 1fr; }
@@ -431,18 +457,20 @@
       .money-block small { display: none; }
       .money { font-size: .72rem; }
       .clue-label { font-size: .43rem; }
-      #clue { font-size: .76rem; -webkit-line-clamp: 1; }
+      #clue { font-size: .7rem; line-height: 1.05; }
       .jackpot { margin-bottom: 3px; padding-block: 4px; font-size: .66rem; }
       .board { min-height: 68px; max-height: 15dvh; padding: 5px; border-width: 3px; row-gap: 3px; }
       .letter { width: clamp(13px, 4.7vw, 20px); font-size: .72rem; }
       .board.long .letter { width: clamp(11px, 4vw, 17px); font-size: .64rem; }
       .board.extra-long .letter { width: clamp(9px, 3.5vw, 14px); font-size: .56rem; }
-      .wheel-zone, .power-meter { width: min(190px, 29dvh, 58vw); }
+      .wheel-zone { width: min(250px, 34dvh, 70vw); }
+      .power-meter, .turn-timer { width: min(250px, 70vw); }
       .status { min-height: 30px; max-height: 36px; margin: 4px 0; padding: 5px 8px; font-size: .62rem; }
       .spin-hint { font-size: .5rem; }
       .actions { gap: 5px; }
       .action-btn { padding: 7px 6px; font-size: .56rem; }
       .letters-used { min-height: 24px; max-height: 27px; padding-block: 5px; }
+      .remote-banner { display: none; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
@@ -531,6 +559,12 @@
           <div id="jackpotRule" class="jackpot-rule"></div>
           <div id="board" class="board" aria-label="Panel de frase"></div>
           <div id="status" class="status" role="status" aria-live="polite">Todo listo. ¡Gira la ruleta!</div>
+          <div id="remoteBanner" class="remote-banner hidden" aria-live="polite"></div>
+          <div id="turnTimer" class="turn-timer" aria-label="Temporizador de turno">
+            <span id="timerLabel">TURNO</span>
+            <div class="timer-track"><div id="timerFill" class="timer-fill"></div></div>
+            <strong id="timerValue">30s</strong>
+          </div>
           <div class="wheel-zone">
             <div class="pointer" aria-hidden="true"></div>
             <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
@@ -859,6 +893,7 @@
     const TOTAL_ROUNDS = 5;
     const JACKPOT_ROUND = TOTAL_ROUNDS - 1;
     const MAX_PLAYERS = 4;
+    const TURN_SECONDS = 30;
     // Orden visual desde las doce, siguiendo el sentido antihorario del programa.
     const WEDGES = [
       { type:"money", label:"100", value:100, color:"#46b9e8" },
@@ -897,12 +932,14 @@
       chargeStart: 0, charge: 0, chargeFrame: 0, velocity: 0, lastRevealed: null, lastTick: -1,
       activeWedges: [], jackpotClaimed: false, jackpotWinner: "", jackpotClaimedAmount: 0,
       choiceMode: "", statusText: "Todo listo. ¡Gira la ruleta!", statusType: "", screen: "start",
-      playerSlots: [], history: []
+      playerSlots: [], history: [],
+      timerDeadline: 0, timerRemaining: TURN_SECONDS, timerFrame: 0, activity: ""
     };
     const online = {
       enabled: false, connected: false, socket: null, roomCode: "", playerIndex: null,
       isHost: false, applyingRemote: false, started: false, players: [], token: "",
-      pendingOpenActions: [], autoRejoining: false
+      pendingOpenActions: [], autoRejoining: false,
+      heartbeatTimer: 0, reconnectTimer: 0, reconnectAttempts: 0, manualClose: false
     };
     let audioContext=null, soundEnabled=true;
 
@@ -1049,6 +1086,29 @@
       const host=location.protocol==="file:"?"localhost:3000":location.host;
       return `${protocol}://${host}`;
     }
+    function stopHeartbeat() {
+      clearInterval(online.heartbeatTimer);
+      online.heartbeatTimer=0;
+    }
+    function startHeartbeat() {
+      stopHeartbeat();
+      online.heartbeatTimer=setInterval(()=>sendOnline({ type:"ping", time:Date.now() }),15000);
+    }
+    function scheduleReconnect(reason="") {
+      if (!online.enabled || !online.roomCode || !online.token || state.screen==="final") return;
+      clearTimeout(online.reconnectTimer);
+      const delay=Math.min(1000*Math.pow(1.7,online.reconnectAttempts),8000);
+      online.reconnectAttempts++;
+      const message=reason==="visible"?"Reconectando al volver a la partida…":"Reconectando con la sala…";
+      if (state.screen==="game") setStatus(message,"spin-result");
+      online.reconnectTimer=setTimeout(()=>reconnectOnlineSeat(),delay);
+    }
+    function reconnectOnlineSeat() {
+      if (!online.roomCode || !online.token) return;
+      const name=safeStorageGet("ruletaPlayerName") || state.players[online.playerIndex]?.name || $("onlineName").value.trim() || "Jugador";
+      online.autoRejoining=true;
+      connectOnline(()=>sendOnline({type:"join_room",code:online.roomCode,name,token:online.token}),true);
+    }
     function connectOnline(onOpen) {
       if (online.socket && online.socket.readyState===WebSocket.OPEN) { onOpen(); return; }
       if (online.socket && online.socket.readyState===WebSocket.CONNECTING) {
@@ -1056,23 +1116,27 @@
         return;
       }
       online.pendingOpenActions = onOpen ? [onOpen] : [];
+      online.manualClose=false;
       setOnlineStatus("Conectando con el servidor…");
       const socket=new WebSocket(wsUrl()); online.socket=socket;
       socket.addEventListener("open",()=>{
-        online.connected=true;
+        online.connected=true; online.reconnectAttempts=0; startHeartbeat();
         const actions=[...online.pendingOpenActions];
         online.pendingOpenActions=[];
         actions.forEach(action=>action());
       });
       socket.addEventListener("message",event=>handleOnlineMessage(JSON.parse(event.data)));
       socket.addEventListener("close",()=>{
-        online.connected=false;
+        online.connected=false; stopHeartbeat();
         online.socket=null;
         online.pendingOpenActions=[];
-        if (online.enabled && !state.finished) setStatus("Conexión online perdida. Recarga y volverás a entrar automáticamente.","bad");
+        if (online.enabled && !state.finished) setStatus("Conexión online perdida. Intentando reconectar…","bad");
         if (!online.started) setOnlineStatus("No hay conexión con el servidor. Arranca Node y entra por http://localhost:3000","bad");
+        if (!online.manualClose) scheduleReconnect();
       });
-      socket.addEventListener("error",()=>setOnlineStatus("No puedo conectar. Asegúrate de ejecutar `npm start` y abrir http://localhost:3000","bad"));
+      socket.addEventListener("error",()=>{
+        if (!online.enabled) setOnlineStatus("No puedo conectar. Asegúrate de ejecutar `npm start` y abrir http://localhost:3000","bad");
+      });
     }
     function sendOnline(message) {
       if (online.socket?.readyState===WebSocket.OPEN) online.socket.send(JSON.stringify(message));
@@ -1100,6 +1164,7 @@
       connectOnline(()=>sendOnline({type:"join_room",code,name,token:online.token}));
     }
     function handleOnlineMessage(message) {
+      if (message.type==="pong") return;
       if (message.type==="room_created") {
         online.enabled=true; online.isHost=Boolean(message.isHost); online.started=false; online.roomCode=message.code; online.playerIndex=message.playerIndex; online.players=message.players;
         online.token=message.token||online.token; rememberOnlineSeat(message.code,online.token);
@@ -1160,7 +1225,8 @@
         jackpotClaimed: state.jackpotClaimed, jackpotWinner: state.jackpotWinner,
         jackpotClaimedAmount: state.jackpotClaimedAmount, choiceMode: state.choiceMode,
         statusText: state.statusText, statusType: state.statusType, screen: state.screen,
-        history: state.history
+        history: state.history, timerDeadline: state.timerDeadline, timerRemaining: state.timerRemaining,
+        activity: state.activity
       };
     }
     function syncOnline(reason="state") {
@@ -1175,7 +1241,9 @@
       state.jackpotClaimed=Boolean(snapshot.jackpotClaimed); state.jackpotWinner=snapshot.jackpotWinner||""; state.jackpotClaimedAmount=snapshot.jackpotClaimedAmount||0;
       state.choiceMode=snapshot.choiceMode||""; state.statusText=snapshot.statusText||""; state.statusType=snapshot.statusType||""; state.screen=snapshot.screen||"game";
       state.history=snapshot.history||[];
+      state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||TURN_SECONDS; state.activity=snapshot.activity||"";
       state.spinning=false; state.charging=false; state.choosing=false; state.charge=0; updatePowerMeter(0); $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML="";
+      ensureTimerLoop(); updateTimerDisplay();
       $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
       $("modalBackdrop").classList.add("hidden");
       if (state.screen==="final") showFinal(false);
@@ -1191,6 +1259,63 @@
     function currentPlayer() { return state.players[state.active]; }
     function nextPlayerIndex(from=state.active) { return (from + 1) % state.players.length; }
     function scoreboardLine() { return state.players.map(p=>`${p.name} ${money(p.total)}`).join(" · "); }
+    function timerShouldRun() {
+      return state.screen==="game" && state.players.length && !state.finished && !state.spinning && !state.charging && state.timerDeadline>0;
+    }
+    function updateTimerDisplay() {
+      const timer=$("turnTimer"), fill=$("timerFill"), value=$("timerValue"), label=$("timerLabel");
+      if (!timer || !fill || !value || !label) return;
+      if (!state.players.length || state.screen!=="game" || state.finished) {
+        timer.classList.add("paused"); fill.style.width="0%"; value.textContent="—"; label.textContent="TURNO"; return;
+      }
+      const remaining=state.timerDeadline ? Math.max(0,Math.ceil((state.timerDeadline-Date.now())/1000)) : state.timerRemaining;
+      state.timerRemaining=remaining;
+      const percent=Math.max(0,Math.min(100,(remaining/TURN_SECONDS)*100));
+      fill.style.width=`${percent}%`;
+      value.textContent=`${remaining}s`;
+      label.textContent=online.enabled && !onlineCanAct() ? "ESPERA" : "TURNO";
+      timer.classList.toggle("danger",remaining<=8 && state.timerDeadline>0);
+      timer.classList.toggle("paused",!timerShouldRun());
+    }
+    function timerLoop() {
+      updateTimerDisplay();
+      if (timerShouldRun() && state.timerRemaining<=0 && (!online.enabled || onlineCanAct())) handleTurnTimeout();
+      state.timerFrame=requestAnimationFrame(timerLoop);
+    }
+    function ensureTimerLoop() {
+      if (!state.timerFrame) state.timerFrame=requestAnimationFrame(timerLoop);
+    }
+    function resetTurnTimer() {
+      state.timerDeadline=Date.now()+TURN_SECONDS*1000;
+      state.timerRemaining=TURN_SECONDS;
+      ensureTimerLoop();
+      updateTimerDisplay();
+    }
+    function stopTurnTimer() {
+      state.timerDeadline=0;
+      state.timerRemaining=TURN_SECONDS;
+      updateTimerDisplay();
+    }
+    function handleTurnTimeout() {
+      if (state.finished || state.spinning || state.charging || !onlineCanAct()) return;
+      stopTurnTimer();
+      hideChoices();
+      $("modalBackdrop").classList.add("hidden");
+      state.choosing=false; state.activity="";
+      addHistory(`${currentPlayer().name} agotó el tiempo`,"bad");
+      sfx("bad");
+      switchTurn(`Tiempo agotado. Turno de ${state.players[nextPlayerIndex()].name}.`);
+    }
+    function activityText() {
+      const name=currentPlayer()?.name || "el otro jugador";
+      return {
+        charging: `${name} está cargando la ruleta`,
+        spinning: `${name} está girando la ruleta`,
+        choosing_letter: `${name} está eligiendo consonante`,
+        buying_vowel: `${name} está comprando vocal`,
+        solving: `${name} está intentando resolver`
+      }[state.activity] || `Turno de ${name}`;
+    }
     function resetViewportPosition() {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
@@ -1278,7 +1403,8 @@
       state.players = names.map((name,i) => ({ name:name||`Jugador ${i+1}`, roundMoney:0, total:0, wildcard:false }));
       state.playerSlots = playerSlots;
       state.panels = panels; state.round=0; state.active=0; state.currentRotation=0; state.finished=false; state.results=[]; state.jackpot=300;
-      state.jackpotClaimed=false; state.jackpotWinner=""; state.jackpotClaimedAmount=0; state.screen="game"; state.history=[];
+      state.jackpotClaimed=false; state.jackpotWinner=""; state.jackpotClaimedAmount=0; state.screen="game"; state.history=[]; state.activity="";
+      stopTurnTimer();
       $("wheel").style.transform="rotate(0deg)";
     }
     function startGame(e) {
@@ -1302,12 +1428,13 @@
     }
     function beginRound() {
       state.used = new Set(); state.choosing=false; state.pendingWedge=null; state.charging=false; state.spinning=false; state.charge=0;
-      state.choiceMode=""; state.screen="game";
+      state.choiceMode=""; state.screen="game"; state.activity="";
       updatePowerMeter(0);
       state.players.forEach(p => p.roundMoney=0);
       buildWheel();
       hideChoices(); setStatus(`${currentPlayer().name} empieza. Mantén pulsada la ruleta para cargar fuerza.`);
       addHistory(`Panel ${state.round+1}: empieza ${currentPlayer().name}`,"turn");
+      resetTurnTimer();
       render();
     }
 
@@ -1343,8 +1470,11 @@
       document.querySelector(".wheel-zone").classList.toggle("disabled",state.spinning||state.choosing||state.finished||hiddenLetters(CONSONANTS).length===0);
       document.querySelector(".wheel-zone").classList.toggle("disabled",locked||hiddenLetters(CONSONANTS).length===0);
       $("spinHint").textContent=notMyTurn?`ESPERANDO A ${currentPlayer().name.toUpperCase()}`:(!hiddenLetters(CONSONANTS).length?"NO QUEDAN CONSONANTES: COMPRA VOCAL O RESUELVE":(state.spinning?"LA RULETA ESTÁ GIRANDO…":state.charging?"SUELTA PARA GIRAR":"MANTÉN PULSADA LA RULETA PARA CARGAR"));
+      $("remoteBanner").classList.toggle("hidden",!(online.enabled && notMyTurn && !state.finished));
+      $("remoteBanner").textContent=activityText();
       $("vowelBtn").disabled=locked || currentPlayer().roundMoney<50 || hiddenLetters(VOWELS).length===0;
       $("solveBtn").disabled=locked;
+      updateTimerDisplay();
       renderHistory();
     }
     function renderBoard(revealAll=false) {
@@ -1370,10 +1500,25 @@
       state.statusText=text; state.statusType=type;
       const el=$("status"); el.textContent=text; el.className=`status ${type}`.trim();
     }
-    function hideChoices() { state.choosing=false; state.choiceMode=""; $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML=""; }
+    function hideChoices() { state.choosing=false; state.choiceMode=""; state.activity=""; $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML=""; }
     function showChoices(letters,title,handler,kind="") {
-      state.choosing=true; state.choiceMode=kind||"consonant"; $("choiceTitle").textContent=title; const keys=$("keyboard"); keys.innerHTML="";
-      letters.forEach(letter => { const b=document.createElement("button"); b.className=`key ${kind}`; b.textContent=letter; b.onclick=()=>handler(letter); keys.appendChild(b); });
+      state.choosing=true; state.choiceMode=kind||"consonant"; state.activity=kind==="vowel"?"buying_vowel":"choosing_letter"; $("choiceTitle").textContent=title; const keys=$("keyboard"); keys.innerHTML="";
+      resetTurnTimer();
+      letters.forEach(letter => {
+        const b=document.createElement("button"); b.type="button"; b.className=`key ${kind}`; b.textContent=letter; b.dataset.letter=letter;
+        let used=false;
+        const choose=event=>{
+          event.preventDefault();
+          event.stopPropagation();
+          if (used || b.disabled) return;
+          used=true; b.disabled=true;
+          handler(letter);
+        };
+        b.addEventListener("pointerup",choose,{ passive:false });
+        b.addEventListener("touchend",choose,{ passive:false });
+        b.addEventListener("click",choose);
+        keys.appendChild(b);
+      });
       $("choicePanel").classList.remove("hidden"); render();
     }
 
@@ -1387,9 +1532,10 @@
     }
     function startCharge(event) {
       if (wheelLocked()) return;
-      event.preventDefault(); state.charging=true; state.charge=0; state.chargeStart=performance.now();
+      event.preventDefault(); stopTurnTimer(); state.activity="charging"; state.charging=true; state.charge=0; state.chargeStart=performance.now();
       $("wheel").classList.add("charging"); $("wheel").setPointerCapture?.(event.pointerId);
       sfx("charge"); setStatus("Cargando fuerza… suelta cuando quieras girar.","spin-result"); render();
+      syncOnline("charge");
       function charge(now) {
         if (!state.charging) return;
         state.charge=Math.min(100,(now-state.chargeStart)/18); updatePowerMeter(state.charge);
@@ -1403,8 +1549,9 @@
       if (state.charge<8) {
         state.charge=0; updatePowerMeter(0); sfx("bad"); setStatus("¡Mantén pulsado un poco más para cargar fuerza!","bad"); render(); return;
       }
-      state.velocity=-(5+state.charge*.3); state.spinning=true; state.lastTick=-1; sfx("spin"); render();
+      state.velocity=-(5+state.charge*.3); state.spinning=true; state.activity="spinning"; state.lastTick=-1; sfx("spin"); render();
       setStatus(`¡Allá va! Fuerza ${Math.round(state.charge)}%.`);
+      syncOnline("spin_start");
       let previous=performance.now();
       function inertia(now) {
         const frame=Math.min((now-previous)/16.67,2.5); previous=now;
@@ -1421,10 +1568,11 @@
       if (!state.charging) return; state.charging=false; cancelAnimationFrame(state.chargeFrame); state.charge=0;
       $("wheel").classList.remove("charging"); updatePowerMeter(0);
       try { $("wheel").releasePointerCapture?.(event.pointerId); } catch (_) {}
-      setStatus("Carga cancelada. Mantén pulsada la ruleta para intentarlo de nuevo."); render();
+      state.activity=""; resetTurnTimer();
+      setStatus("Carga cancelada. Mantén pulsada la ruleta para intentarlo de nuevo."); render(); syncOnline("charge_cancel");
     }
     function stopWheel() {
-      state.spinning=false; state.velocity=0;
+      state.spinning=false; state.velocity=0; state.activity="";
       const normalized=((state.currentRotation%360)+360)%360;
       const winner=Math.floor(normalized/(360/WEDGES.length))%WEDGES.length;
       state.pendingWedge=state.activeWedges[winner]; highlightWedge(winner); resolveWedge(state.pendingWedge);
@@ -1437,18 +1585,19 @@
       addHistory(`${currentPlayer().name} cayó en ${w.label}${w.value?` (${money(w.value)})`:""}`,"spin");
       if (w.type==="jackpot") {
         state.jackpotClaimed=true; state.jackpotWinner=currentPlayer().name; state.jackpotClaimedAmount=state.jackpot;
-        currentPlayer().total+=state.jackpot; sfx("win"); celebrate(100); buildWheel(); render();
+        currentPlayer().total+=state.jackpot; resetTurnTimer(); sfx("win"); celebrate(100); buildWheel(); render();
         addHistory(`${currentPlayer().name} gana el bote: ${money(state.jackpotClaimedAmount)}`,"jackpot");
         setStatus(`¡${currentPlayer().name} cae en BOTE y gana ${money(state.jackpotClaimedAmount)}! Mantiene el turno.`,"good"); syncOnline("jackpot"); return;
       }
       if (w.type==="bankrupt") {
+        stopTurnTimer();
         const lost=currentPlayer().roundMoney; currentPlayer().roundMoney=0; if(!state.jackpotClaimed) state.jackpot+=lost;
         sfx("bankrupt"); render(); animateElement("board","shake"); if(lost) bumpJackpot();
         addHistory(`${currentPlayer().name} hace quiebra y pierde ${money(lost)}`,"bad");
         setStatus(`¡QUIEBRA! Pierdes ${money(lost)}${lost?" y pasan al bote final":""}.`,"bad");
         offerWildcard("quiebra"); return;
       }
-      if (w.type==="lose") { sfx("bad"); addHistory(`${currentPlayer().name} pierde turno`,"bad"); setStatus("¡PIERDE TURNO!","bad"); offerWildcard("pierde turno"); return; }
+      if (w.type==="lose") { stopTurnTimer(); sfx("bad"); addHistory(`${currentPlayer().name} pierde turno`,"bad"); setStatus("¡PIERDE TURNO!","bad"); offerWildcard("pierde turno"); return; }
       if (w.type==="wildcard" && !currentPlayer().wildcard) { currentPlayer().wildcard=true; addHistory(`${currentPlayer().name} consigue comodín`,"wildcard"); }
       const labels={ money:`${w.value} €`, wildcard:`COMODÍN + ${w.value} €`, x2:"X2", half:"½" };
       setStatus(`${labels[w.type]}. Elige una consonante.`,"spin-result");
@@ -1470,11 +1619,11 @@
           if (state.round===JACKPOT_ROUND && !state.jackpotClaimed && w.type==="money") { state.jackpot+=w.value; jackpotChanged=true; boteDetail=` +${money(w.value)} al bote.`; }
         }
         addHistory(`${p.name} eligió ${letter}: ${count} acierto${count>1?"s":""}`,"letter");
-        sfx("good"); setStatus(`¡Hay ${count} ${letter}${count>1?"es":""}! ${detail}${boteDetail}`,"good"); render();
+        resetTurnTimer(); sfx("good"); setStatus(`¡Hay ${count} ${letter}${count>1?"es":""}! ${detail}${boteDetail}`,"good"); render();
         if(jackpotChanged) bumpJackpot(); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("consonant");
       } else {
         addHistory(`${p.name} eligió ${letter}: no está`,"bad");
-        sfx("bad"); setStatus(`No hay ninguna ${letter}. Pierdes el turno.`,"bad"); render(); offerWildcard("consonante fallida");
+        stopTurnTimer(); sfx("bad"); setStatus(`No hay ninguna ${letter}. Pierdes el turno.`,"bad"); render(); offerWildcard("consonante fallida");
       }
     }
 
@@ -1484,8 +1633,8 @@
     }
     function chooseVowel(letter) {
       hideChoices(); const p=currentPlayer(); p.roundMoney-=50; state.used.add(letter); const count=occurrences(letter);
-      if (count>0) { state.lastRevealed=letter; addHistory(`${p.name} compró ${letter}: ${count} acierto${count>1?"s":""}`,"vowel"); sfx("good"); setStatus(`¡Hay ${count} ${letter}${count>1?"es":""}! La vocal ha costado 50 €.`,"good"); render(); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("vowel"); }
-      else { addHistory(`${p.name} compró ${letter}: no está`,"bad"); sfx("bad"); setStatus(`No hay ninguna ${letter}. Pierdes 50 € y el turno.`,"bad"); render(); offerWildcard("vocal fallida"); }
+      if (count>0) { state.lastRevealed=letter; addHistory(`${p.name} compró ${letter}: ${count} acierto${count>1?"s":""}`,"vowel"); resetTurnTimer(); sfx("good"); setStatus(`¡Hay ${count} ${letter}${count>1?"es":""}! La vocal ha costado 50 €.`,"good"); render(); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("vowel"); }
+      else { addHistory(`${p.name} compró ${letter}: no está`,"bad"); stopTurnTimer(); sfx("bad"); setStatus(`No hay ninguna ${letter}. Pierdes 50 € y el turno.`,"bad"); render(); offerWildcard("vocal fallida"); }
     }
     function checkAutoSolved() {
       const remaining=LETTERS.some(l=>currentPanel().answer.includes(l)&&!state.used.has(l));
@@ -1495,17 +1644,17 @@
 
     function openSolve() {
       if (!onlineCanAct()) return;
-      state.choosing=true; render();
+      state.choosing=true; state.activity="solving"; resetTurnTimer(); render(); syncOnline("solving");
       $("modal").innerHTML=`<div class="modal-icon">💡</div><h2>Resolver panel</h2><p>Escribe la solución completa. Las tildes no son necesarias.</p><form id="solveForm"><input id="solutionInput" aria-label="Solución" autocomplete="off" placeholder="ESCRIBE AQUÍ…"><div class="modal-actions"><button type="button" id="cancelSolve" class="modal-btn alt">CANCELAR</button><button class="modal-btn">COMPROBAR</button></div></form>`;
       $("modalBackdrop").classList.remove("hidden"); setTimeout(()=>$("solutionInput").focus(),50);
       $("cancelSolve").onclick=closeModal; $("solveForm").onsubmit=checkSolution;
     }
-    function closeModal() { $("modalBackdrop").classList.add("hidden"); state.choosing=false; render(); }
+    function closeModal() { $("modalBackdrop").classList.add("hidden"); state.choosing=false; state.activity=""; resetTurnTimer(); render(); }
     function checkSolution(e) {
       e.preventDefault(); const attempt=$("solutionInput").value;
-      if (normalize(attempt)===normalize(currentPanel().answer)) { addHistory(`${currentPlayer().name} resolvió el panel`,"solve"); closeModal(); renderBoard(true); setStatus("¡Respuesta correcta!","good"); setTimeout(()=>finishRound(state.active),600); }
+      if (normalize(attempt)===normalize(currentPanel().answer)) { addHistory(`${currentPlayer().name} resolvió el panel`,"solve"); closeModal(); stopTurnTimer(); renderBoard(true); setStatus("¡Respuesta correcta!","good"); setTimeout(()=>finishRound(state.active),600); }
       else {
-        closeModal(); if(!state.jackpotClaimed) state.jackpot+=50; sfx("bad");
+        closeModal(); stopTurnTimer(); if(!state.jackpotClaimed) state.jackpot+=50; sfx("bad");
         const next=state.players[nextPlayerIndex()].name;
         addHistory(`${currentPlayer().name} falló al resolver`,"bad");
         switchTurn(`No es correcto.${state.jackpotClaimed?"":" +50 € al bote final."} Turno de ${next}.`); if(!state.jackpotClaimed) bumpJackpot();
@@ -1521,14 +1670,15 @@
       $("declineWild").onclick=()=>{ addHistory(`${currentPlayer().name} no usa comodín`,"turn"); closeModal(); switchTurn(); };
     }
     function switchTurn(message="") {
-      hideChoices(); state.active=nextPlayerIndex(); state.pendingWedge=null;
+      hideChoices(); state.active=nextPlayerIndex(); state.pendingWedge=null; state.activity="";
       addHistory(`Turno de ${currentPlayer().name}`,"turn");
+      resetTurnTimer();
       setStatus(message||`Turno de ${currentPlayer().name}.`,message?"bad":""); render(); syncOnline("turn");
     }
 
     function finishRound(winnerIndex) {
       if (state.finished) return; state.finished=true;
-      state.choiceMode=""; state.screen="game";
+      state.choiceMode=""; state.screen="game"; state.activity=""; stopTurnTimer();
       const last=state.round===TOTAL_ROUNDS-1;
       const winner=state.players[winnerIndex], panelMoney=winner.roundMoney, earned=panelMoney;
       winner.total+=earned; state.active=winnerIndex;
@@ -1547,7 +1697,7 @@
       $("nextRound").onclick=()=>{ $("modalBackdrop").classList.add("hidden"); if(last) showFinal(); else { state.round++; state.finished=false; beginRound(); syncOnline("next_round"); } };
     }
     function showFinal(shouldSync=true) {
-      state.screen="final";
+      state.screen="final"; state.activity=""; stopTurnTimer();
       showFinalScreen();
       const topScore=Math.max(...state.players.map(p=>p.total)), winners=state.players.filter(p=>p.total===topScore), tie=winners.length>1, winner=winners[0];
       sfx("win"); celebrate(150);
@@ -1584,6 +1734,14 @@
       if (code) setOnlineStatus(`Código ${roomCodeMarkup(code)} detectado en el enlace. Escribe tu nombre y pulsa Entrar.`, "good");
       else setOnlineStatus(`Tienes una sala reciente: ${roomCodeMarkup(target)}. Pulsa Entrar para reconectar a tu puesto.`, "good");
     }
+    function resumeOnlineConnection() {
+      if (!online.enabled || !online.roomCode || !online.token) return;
+      if (!online.socket || online.socket.readyState===WebSocket.CLOSED || online.socket.readyState===WebSocket.CLOSING) {
+        scheduleReconnect("visible");
+        return;
+      }
+      sendOnline({ type:"ping", time:Date.now() });
+    }
 
     buildWheel();
     initSharedRoom();
@@ -1602,6 +1760,9 @@
     $("vowelBtn").addEventListener("click",buyVowel);
     $("solveBtn").addEventListener("click",openSolve);
     $("restartBtn").addEventListener("click",restart);
+    window.addEventListener("online",resumeOnlineConnection);
+    window.addEventListener("pageshow",resumeOnlineConnection);
+    document.addEventListener("visibilitychange",()=>{ if (!document.hidden) resumeOnlineConnection(); });
   </script>
 </body>
 </html>
