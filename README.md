@@ -1,0 +1,195 @@
+# La Ruleta de la Suerte — Juego online
+
+Juego web inspirado en los concursos clásicos de ruleta y paneles de palabras, desarrollado como proyecto de portfolio. Permite jugar partidas locales u online con salas privadas, códigos de invitación y sincronización en tiempo real entre varios jugadores.
+
+> Proyecto fan/no oficial. No está afiliado a Antena 3 ni a ningún programa, marca o productora.
+
+## Demo local
+
+```bash
+npm install
+npm start
+```
+
+Después abre:
+
+```text
+http://localhost:3000
+```
+
+## El reto
+
+La idea inicial era crear una versión jugable en navegador de un concurso de paneles: ruleta, letras ocultas, compra de vocales, turnos, bote, rondas y resolución final.
+
+El reto fue evolucionarlo de una experiencia local a una partida online sincronizada:
+
+- crear salas privadas con código;
+- permitir de 2 a 4 jugadores;
+- controlar turnos y acciones en tiempo real;
+- mantener una interfaz responsive;
+- permitir reconexión si alguien recarga o se cae;
+- conservar una experiencia rápida, sin frameworks ni build step.
+
+## Stack
+
+- HTML, CSS y JavaScript vanilla
+- Node.js
+- WebSockets con [`ws`](https://www.npmjs.com/package/ws)
+- Web Audio API para sonidos generados en el navegador
+- SVG para dibujar la ruleta
+
+## Funcionalidades principales
+
+- Partida de 5 rondas.
+- Dificultad progresiva por ronda.
+- Base de datos integrada con 200 paneles en español de España.
+- Modo local para 2 a 4 jugadores.
+- Modo online con salas privadas.
+- Código de sala y enlace compartible.
+- Lobby visual con plazas J1–J4.
+- El anfitrión es el único que puede empezar la partida.
+- Reconexión por `playerToken` guardado en `localStorage`.
+- Turnos circulares entre jugadores.
+- Compra de vocales.
+- Resolución de panel.
+- Ruleta con gajos de dinero, quiebra, pierde turno, x2, mitad, comodín y bote.
+- Bote variable con regla propia:
+  - crece entre rondas;
+  - recibe dinero de quiebras y fallos;
+  - solo se gana cayendo en el gajo de bote en la ronda final.
+- Historial de partida en vivo.
+- Sonidos y animaciones.
+- Diseño responsive para escritorio y móvil.
+
+## Decisiones técnicas
+
+### 1. Una aplicación ligera y sin framework
+
+El juego está construido en un único `index.html` con CSS y JavaScript embebidos. Para este proyecto tenía sentido priorizar velocidad de desarrollo, despliegue sencillo y cero tooling frontend.
+
+Ventajas:
+
+- fácil de ejecutar;
+- fácil de desplegar;
+- sin build step;
+- ideal para portfolio y prototipado rápido.
+
+### 2. WebSockets para sincronización online
+
+El servidor Node mantiene las salas y retransmite el estado entre jugadores mediante WebSockets.
+
+La comunicación principal se basa en snapshots de estado del juego. Esto es suficiente para una experiencia casual entre amigos y permite que el cliente siga siendo muy simple.
+
+### 3. Reconexión por token
+
+Cada navegador genera o reutiliza un `playerToken` guardado en `localStorage`.
+
+Esto permite que, si un jugador recarga la página o pierde conexión, pueda volver a ocupar su misma plaza en la sala. Si la partida ya empezó, el servidor no permite entrar a jugadores nuevos, solo reconectar a plazas existentes.
+
+### 4. Servidor como gestor de sala
+
+El servidor se encarga de:
+
+- crear salas;
+- asignar plazas;
+- recordar tokens;
+- marcar jugadores conectados/desconectados;
+- limitar las salas a 4 jugadores;
+- impedir que un invitado empiece la partida;
+- rechazar entradas nuevas cuando la partida ya está en curso.
+
+El juego en sí todavía vive principalmente en el cliente. Para una versión competitiva real, el siguiente paso sería convertir el servidor en autoridad completa de las reglas.
+
+### 5. Ruleta en SVG
+
+La ruleta se genera como SVG para poder dibujar los gajos, colores, textos y estados especiales sin depender de imágenes externas.
+
+El giro funciona manteniendo pulsada la ruleta para cargar fuerza. La fuerza determina la velocidad inicial y la inercia decide el gajo final.
+
+## Estructura del proyecto
+
+```text
+.
+├── index.html        # Interfaz, estilos, lógica del juego y paneles
+├── server.js         # Servidor HTTP + WebSocket + salas online
+├── package.json      # Scripts y dependencias
+├── package-lock.json
+└── README.md
+```
+
+## Scripts
+
+```bash
+npm start
+```
+
+Arranca el servidor en:
+
+```text
+http://localhost:3000
+```
+
+El puerto se puede cambiar con la variable `PORT`:
+
+```bash
+PORT=8080 npm start
+```
+
+## Cómo jugar
+
+### Modo online
+
+1. Un jugador crea una sala.
+2. Comparte el código o enlace.
+3. Los demás jugadores entran con el código.
+4. Cuando hay al menos 2 jugadores, el anfitrión puede empezar.
+5. La partida admite hasta 4 jugadores.
+
+### Modo local
+
+1. Pulsa “Jugar partida local”.
+2. Introduce los nombres de 2 a 4 jugadores.
+3. Empieza la partida en el mismo dispositivo.
+
+## Despliegue
+
+El proyecto puede desplegarse en servicios que soporten Node.js y WebSockets, por ejemplo:
+
+- Render
+- Railway
+- Fly.io
+- VPS propio
+
+Comando de arranque:
+
+```bash
+npm start
+```
+
+Si el proveedor define `PORT`, el servidor lo usa automáticamente:
+
+```js
+const PORT = process.env.PORT || 3000;
+```
+
+## Limitaciones actuales
+
+- El servidor gestiona salas y reconexión, pero no valida todas las reglas del juego acción por acción.
+- La sincronización se basa en snapshots, suficiente para uso casual pero no anti-trampas.
+- No hay persistencia en base de datos: si el servidor se reinicia, las salas se pierden.
+- Los paneles están embebidos en el HTML.
+
+## Próximas mejoras
+
+- Servidor autoritativo por acciones en vez de snapshots.
+- Temporizador opcional por turno.
+- QR para compartir sala desde móvil.
+- Pantalla de configuración de partida.
+- Modo partida corta de 3 rondas.
+- Persistencia temporal de salas.
+- Tests automáticos de reglas principales.
+
+## Autor
+
+Proyecto desarrollado por Miguel como ejercicio de producto, frontend interactivo y juego online en tiempo real para portfolio.
+
