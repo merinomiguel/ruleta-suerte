@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ruleta-suerte
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeployTrigger: commit
