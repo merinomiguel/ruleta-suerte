@@ -42,7 +42,7 @@
     button { cursor: pointer; }
     button:focus-visible, input:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
     .hidden { display: none !important; }
-    .screen { min-height: 100vh; }
+    .screen { min-height: 100vh; min-height: 100dvh; }
 
     /* Portada */
     #startScreen, #finalScreen {
@@ -134,7 +134,7 @@
     .jackpot.bump { animation: jackpotBump .5s ease; }
     @keyframes jackpotPulse { to { transform: scale(1.045); box-shadow: 0 0 38px rgba(255,213,61,.65); } }
     @keyframes jackpotBump { 45% { transform: scale(1.16); filter: brightness(1.45); } }
-    .game-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 2vw, 20px); align-items: start; }
+    .game-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(12px, 2vw, 20px); align-items: start; min-height: 0; }
     .players-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 12px; }
     .match-log {
       border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(7,12,34,.72);
@@ -169,7 +169,7 @@
     .wildcard { margin-top: 12px; padding: 10px; text-align: center; border-radius: 10px; background: rgba(255,255,255,.06); color: #8993b5; font-size: .78rem; font-weight: 900; }
     .wildcard.owned { color: #241600; background: linear-gradient(135deg, var(--gold), var(--gold-2)); }
 
-    .stage { min-width: 0; }
+    .stage { min-width: 0; min-height: 0; }
     .clue-wrap { text-align: center; margin-bottom: 12px; }
     .clue-label { color: var(--cyan); text-transform: uppercase; letter-spacing: .22em; font-size: .65rem; font-weight: 1000; }
     #clue { margin: 3px 0 0; font-size: clamp(1.1rem, 2.5vw, 1.55rem); }
@@ -261,31 +261,32 @@
 
     /* Modo plató: en escritorio todo el tablero cabe dentro de una sola pantalla. */
     @media (min-width: 901px) and (max-height: 1100px) {
-      #gameScreen { height: 100dvh; min-height: 0; overflow: hidden; padding: 9px clamp(16px,2.2vw,34px); }
+      #gameScreen { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; padding: 9px clamp(16px,2.2vw,34px); display: flex; flex-direction: column; }
       .topbar { margin-bottom: 5px; }
       .mini-logo { font-size: clamp(1.15rem,2.2vw,1.8rem); }
       .round-pill { padding: 7px 12px; }
-      .game-grid { min-height: 0; gap: clamp(12px,1.8vw,24px); }
+      .game-grid { flex: 1 1 auto; min-height: 0; gap: clamp(12px,1.8vw,24px); overflow: hidden; }
       .players-panel { grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 9px; }
       .match-log { display: none; }
-      .player-card { padding: 11px 13px; border-radius: 16px; }
-      .player-card h2 { margin: 3px 0 6px; font-size: 1rem; }
-      .money-block { padding: 5px 0; }
-      .money-block small { font-size: .62rem; }
-      .money { font-size: clamp(.98rem,1.8vw,1.25rem); }
-      .wildcard { margin-top: 8px; padding: 8px; }
+      .player-card { padding: 9px 12px; border-radius: 15px; }
+      .player-card.active { transform: none; }
+      .player-card h2 { margin: 2px 0 5px; font-size: .95rem; }
+      .money-block { padding: 3px 0; }
+      .money-block small { font-size: .56rem; margin-bottom: 1px; }
+      .money { font-size: clamp(.9rem,1.6vw,1.12rem); }
+      .wildcard { display: none; }
       .clue-wrap { margin-bottom: 4px; }
       .clue-label { font-size: .58rem; }
       #clue { margin-top: 1px; font-size: clamp(.95rem,2.2vh,1.25rem); line-height: 1.15; }
       .jackpot { margin: 4px auto 7px; padding: 6px 17px; font-size: clamp(.85rem,2.3vh,1.25rem); }
       .jackpot.compact { padding: 5px 14px; font-size: clamp(.76rem,1.8vh,1rem); }
       .jackpot-rule { margin: -4px auto 5px; font-size: .56rem; }
-      .board { min-height: clamp(105px,17vh,160px); padding: 9px 14px; column-gap: 14px; row-gap: 7px; border-width: 5px; border-radius: 14px; }
+      .board { min-height: clamp(92px,15vh,140px); padding: 8px 13px; column-gap: 12px; row-gap: 6px; border-width: 5px; border-radius: 14px; }
       .word { gap: 4px; }
       .letter { width: clamp(20px,2.25vw,34px); font-size: clamp(.88rem,2.2vw,1.35rem); }
       .letter.covered { font-size: .58rem; }
       .status { min-height: 42px; margin: 7px 0 5px; padding: 7px 14px; font-size: .82rem; }
-      .wheel-zone { width: min(265px,30vh); margin-bottom: 2px; }
+      .wheel-zone { width: min(235px,27vh); margin-bottom: 1px; }
       .pointer { top: -3px; border-left-width: 11px; border-right-width: 11px; border-top-width: 24px; }
       .wheel-center { border-width: 3px; }
       .spin-hint { margin: 1px 0 4px; font-size: .66rem; }
@@ -294,7 +295,7 @@
       .power-track { height: 9px; }
       .actions { gap: 8px; }
       .action-btn { padding: 8px 14px; font-size: .72rem; }
-      .letters-used { margin-top: 6px; padding: 8px 12px; min-height: 32px; }
+      .letters-used { margin-top: 5px; padding: 6px 12px; min-height: 28px; }
       .letters-used span:first-child { font-size: .61rem; }
       #usedLetters { font-size: .75rem; }
       .choice-panel { position: fixed; z-index: 12; left: 50%; bottom: 12px; transform: translateX(-50%); width: min(720px,calc(100vw - 30px)); margin: 0; padding: 12px; box-shadow: 0 14px 45px rgba(0,0,0,.65); }
@@ -305,12 +306,11 @@
     @media (min-width: 901px) and (max-height: 760px) {
       #gameScreen { padding-block: 5px; }
       .topbar { margin-bottom: 2px; }
-      .board { min-height: 102px; }
+      .board { min-height: 86px; }
       .status { min-height: 36px; margin-block: 4px; }
-      .wheel-zone { width: min(250px,33vh); }
-      .player-card { padding: 11px 14px; }
-      .money-block { padding: 6px 0; }
-      .wildcard { margin-top: 5px; padding: 6px; }
+      .wheel-zone { width: min(210px,29vh); }
+      .player-card { padding: 8px 11px; }
+      .money-block { padding: 2px 0; }
       .letters-used { margin-top: 4px; padding-block: 6px; }
     }
 
@@ -321,24 +321,128 @@
       .log-list { max-height: min(520px, calc(100dvh - 145px)); }
     }
 
+    @media (min-width: 1180px) and (max-height: 1100px) {
+      .match-log { display: none; }
+      .game-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+
     @media (max-width: 900px) {
-      .players-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .player-card { padding: 14px; }
-      .player-card h2 { margin-bottom: 8px; }
-      .money-block { display: inline-block; width: 49%; padding: 8px 0; }
-      .log-list { max-height: 150px; }
+      body.playing { overflow: hidden; }
+      #gameScreen {
+        height: 100vh; height: 100dvh; min-height: 0; overflow: hidden;
+        display: flex; flex-direction: column;
+        padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
+      }
+      .topbar { flex: 0 0 auto; gap: 8px; margin-bottom: 6px; }
+      .mini-logo { max-width: 44vw; font-size: clamp(.9rem, 4vw, 1.2rem); line-height: .92; }
+      .top-actions { gap: 6px; }
+      .sound-btn { width: 32px; height: 32px; font-size: .82rem; flex: 0 0 auto; }
+      .round-pill { padding: 6px 8px; font-size: .62rem; white-space: nowrap; }
+      .connection-pill { max-width: 34vw; overflow: hidden; text-overflow: ellipsis; }
+      .game-grid { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+      .players-panel { flex: 0 0 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .player-card {
+        padding: 6px 8px; border-radius: 11px; box-shadow: none;
+        min-height: 0; border-color: rgba(255,255,255,.08);
+      }
+      .player-card.active { transform: none; box-shadow: 0 0 0 1px var(--cyan), 0 0 14px rgba(77,230,226,.18); }
+      .player-tag { display: none; }
+      .player-card h2 { margin: 0 0 4px; font-size: .82rem; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .money-block { display: inline-block; width: 49%; padding: 0; border-top: 0; }
+      .money-block small { margin-bottom: 1px; font-size: .46rem; letter-spacing: .02em; }
+      .money { font-size: .82rem; line-height: 1.05; }
+      .wildcard { display: none; }
+      .stage { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+      .clue-wrap { flex: 0 0 auto; margin-bottom: 4px; }
+      .clue-label { font-size: .48rem; letter-spacing: .14em; }
+      #clue {
+        margin-top: 2px; font-size: clamp(.78rem, 3.3vw, .95rem); line-height: 1.08;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      }
+      .jackpot { flex: 0 0 auto; margin: 2px auto 4px; padding: 5px 12px; font-size: .78rem; border-width: 1px; }
+      .jackpot.compact { padding: 4px 10px; font-size: .68rem; }
+      .jackpot-rule { display: none; }
+      .board {
+        flex: 0 0 auto; min-height: clamp(78px, 15dvh, 118px); max-height: 17dvh; overflow: hidden;
+        padding: 7px; column-gap: 8px; row-gap: 5px; border-width: 4px; border-radius: 12px;
+        box-shadow: inset 0 0 18px rgba(0,0,0,.35), 0 10px 26px rgba(0,0,0,.28);
+      }
+      .word { gap: 3px; }
+      .letter { width: clamp(15px, 5.2vw, 23px); border-radius: 3px; font-size: clamp(.68rem, 4.3vw, .95rem); box-shadow: inset 0 0 0 1px white, 0 2px 0 #7b8b9b; }
+      .letter.covered { font-size: .48rem; }
+      .board.long { column-gap: 6px; row-gap: 4px; }
+      .board.long .word { gap: 2px; }
+      .board.long .letter { width: clamp(13px, 4.5vw, 20px); font-size: clamp(.6rem, 3.7vw, .84rem); }
+      .board.extra-long { column-gap: 5px; row-gap: 3px; padding-inline: 5px; }
+      .board.extra-long .letter { width: clamp(11px, 3.9vw, 17px); font-size: clamp(.54rem, 3.25vw, .76rem); }
+      .board.ultra-long { column-gap: 3px; row-gap: 2px; padding-inline: 4px; }
+      .board.ultra-long .word { gap: 1px; }
+      .board.ultra-long .letter { width: clamp(9px, 3.25vw, 14px); font-size: clamp(.48rem, 2.75vw, .66rem); }
+      .status {
+        flex: 0 0 auto; min-height: 34px; max-height: 44px; overflow: hidden;
+        margin: 5px 0; padding: 6px 9px; border-radius: 10px; font-size: .68rem; line-height: 1.15;
+      }
+      .wheel-zone { flex: 0 0 auto; width: min(230px, 31dvh, 65vw); margin-bottom: 1px; }
+      .pointer { top: -2px; border-left-width: 10px; border-right-width: 10px; border-top-width: 22px; }
+      #wheel { filter: drop-shadow(0 8px 13px rgba(0,0,0,.42)); }
+      #wheel text { font-size: 7px; stroke-width: 1.2px; }
+      .wheel-center { border-width: 3px; font-size: .44rem; }
+      .wheel-center small { font-size: .34rem; }
+      .spin-hint { flex: 0 0 auto; margin: 1px 0 3px; font-size: .56rem; letter-spacing: .02em; line-height: 1.1; }
+      .power-meter { flex: 0 0 auto; width: min(230px, 31dvh, 65vw); margin-bottom: 5px; }
+      .power-label { margin-bottom: 2px; font-size: .52rem; }
+      .power-track { height: 8px; }
+      .actions { flex: 0 0 auto; gap: 6px; flex-wrap: nowrap; }
+      .action-btn { flex: 1 1 0; min-width: 0; padding: 8px 8px; font-size: .62rem; line-height: 1.05; }
+      .letters-used {
+        flex: 0 0 auto; min-height: 27px; max-height: 31px; overflow: hidden;
+        margin-top: 4px; padding: 6px 8px; border-radius: 10px; white-space: nowrap; text-overflow: ellipsis;
+      }
+      .letters-used span:first-child { font-size: .52rem; }
+      #usedLetters { margin-left: 5px; font-size: .64rem; letter-spacing: .08em; }
+      .match-log { display: none; }
+      .choice-panel {
+        position: fixed; z-index: 12; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom));
+        width: auto; max-height: 45dvh; overflow: auto; margin: 0; padding: 10px;
+        box-shadow: 0 14px 45px rgba(0,0,0,.65);
+      }
+      .choice-panel p { margin-bottom: 7px; font-size: .72rem; }
+      .keyboard { gap: 5px; }
+      .key { min-width: 28px; padding: 6px 7px; border-radius: 7px; font-size: .76rem; }
     }
     @media (max-width: 520px) {
-      #gameScreen { padding-inline: 8px; }
       .name-grid { grid-template-columns: 1fr; }
       .online-row, .online-actions, .online-tools { grid-template-columns: 1fr; }
-      .players-panel { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .board { min-height: 170px; gap: 5px; border-width: 5px; }
-      .letter { width: clamp(21px, 7vw, 32px); }
-      .player-card { padding: 11px; }
-      .player-card h2 { font-size: 1rem; }
-      .money { font-size: 1.1rem; }
-      .action-btn { flex: 1 1 42%; padding-inline: 8px; }
+      .players-panel { grid-template-columns: 1fr 1fr; gap: 5px; }
+      .mini-logo { max-width: 38vw; }
+      .round-pill { padding-inline: 7px; }
+      .player-card { padding: 6px 7px; }
+      .player-card h2 { font-size: .78rem; }
+      .money { font-size: .78rem; }
+    }
+
+    @media (max-width: 380px), (max-height: 720px) {
+      .topbar { margin-bottom: 4px; }
+      .mini-logo { font-size: .84rem; }
+      .sound-btn { width: 29px; height: 29px; }
+      .round-pill { padding: 5px 7px; font-size: .56rem; }
+      .player-card { padding: 5px 6px; }
+      .player-card h2 { font-size: .72rem; margin-bottom: 3px; }
+      .money-block small { display: none; }
+      .money { font-size: .72rem; }
+      .clue-label { font-size: .43rem; }
+      #clue { font-size: .76rem; -webkit-line-clamp: 1; }
+      .jackpot { margin-bottom: 3px; padding-block: 4px; font-size: .66rem; }
+      .board { min-height: 68px; max-height: 15dvh; padding: 5px; border-width: 3px; row-gap: 3px; }
+      .letter { width: clamp(13px, 4.7vw, 20px); font-size: .72rem; }
+      .board.long .letter { width: clamp(11px, 4vw, 17px); font-size: .64rem; }
+      .board.extra-long .letter { width: clamp(9px, 3.5vw, 14px); font-size: .56rem; }
+      .wheel-zone, .power-meter { width: min(190px, 29dvh, 58vw); }
+      .status { min-height: 30px; max-height: 36px; margin: 4px 0; padding: 5px 8px; font-size: .62rem; }
+      .spin-hint { font-size: .5rem; }
+      .actions { gap: 5px; }
+      .action-btn { padding: 7px 6px; font-size: .56rem; }
+      .letters-used { min-height: 24px; max-height: 27px; padding-block: 5px; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
@@ -1047,9 +1151,9 @@
       state.history=snapshot.history||[];
       state.spinning=false; state.charging=false; state.choosing=false; state.charge=0; updatePowerMeter(0); $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML="";
       $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
-      $("startScreen").classList.add("hidden"); $("modalBackdrop").classList.add("hidden");
+      $("modalBackdrop").classList.add("hidden");
       if (state.screen==="final") showFinal(false);
-      else { $("finalScreen").classList.add("hidden"); $("gameScreen").classList.remove("hidden"); render(); setStatus(state.statusText,state.statusType); renderHistory(); }
+      else { showGameScreen(); render(); setStatus(state.statusText,state.statusType); renderHistory(); }
       online.applyingRemote=false;
     }
 
@@ -1061,6 +1165,31 @@
     function currentPlayer() { return state.players[state.active]; }
     function nextPlayerIndex(from=state.active) { return (from + 1) % state.players.length; }
     function scoreboardLine() { return state.players.map(p=>`${p.name} ${money(p.total)}`).join(" · "); }
+    function resetViewportPosition() {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
+    }
+    function showGameScreen() {
+      document.body.classList.add("playing");
+      $("startScreen").classList.add("hidden");
+      $("finalScreen").classList.add("hidden");
+      $("gameScreen").classList.remove("hidden");
+      resetViewportPosition();
+    }
+    function showStartScreen() {
+      document.body.classList.remove("playing");
+      $("finalScreen").classList.add("hidden");
+      $("gameScreen").classList.add("hidden");
+      $("startScreen").classList.remove("hidden");
+      resetViewportPosition();
+    }
+    function showFinalScreen() {
+      document.body.classList.remove("playing");
+      $("gameScreen").classList.add("hidden");
+      $("startScreen").classList.add("hidden");
+      $("finalScreen").classList.remove("hidden");
+      resetViewportPosition();
+    }
     function localPlayerNames() {
       return Array.from({ length: MAX_PLAYERS }, (_, i) => $("name"+(i+1)).value.trim())
         .map((name,i)=>name || (i < 2 ? `Jugador ${i+1}` : ""))
@@ -1132,7 +1261,7 @@
       const names = localPlayerNames();
       initializeGame(names);
       ensureAudio(); sfx("charge");
-      $("startScreen").classList.add("hidden"); $("finalScreen").classList.add("hidden"); $("gameScreen").classList.remove("hidden");
+      showGameScreen();
       beginRound();
     }
     function startOnlineMatch() {
@@ -1142,7 +1271,7 @@
       if (names.length<2) return;
       initializeGame(names, selectProgressivePanels(), connected.map(p=>p.slot));
       online.started=true; ensureAudio(); sfx("charge");
-      $("startScreen").classList.add("hidden"); $("finalScreen").classList.add("hidden"); $("gameScreen").classList.remove("hidden");
+      showGameScreen();
       beginRound(); syncOnline("start");
     }
     function beginRound() {
@@ -1194,6 +1323,10 @@
     }
     function renderBoard(revealAll=false) {
       const board=$("board"); board.innerHTML="";
+      const lettersOnly = currentPanel().answer.replace(/[^A-ZÑ0-9]/g, "").length;
+      board.classList.toggle("long", lettersOnly > 22);
+      board.classList.toggle("extra-long", lettersOnly > 32);
+      board.classList.toggle("ultra-long", lettersOnly > 42);
       currentPanel().answer.split(" ").forEach(wordText => {
         const word=document.createElement("span"); word.className="word";
         [...wordText].forEach(char => {
@@ -1389,7 +1522,7 @@
     }
     function showFinal(shouldSync=true) {
       state.screen="final";
-      $("gameScreen").classList.add("hidden"); $("finalScreen").classList.remove("hidden");
+      showFinalScreen();
       const topScore=Math.max(...state.players.map(p=>p.total)), winners=state.players.filter(p=>p.total===topScore), tie=winners.length>1, winner=winners[0];
       sfx("win"); celebrate(150);
       $("winnerName").textContent=tie?`¡EMPATE ENTRE ${winners.map(p=>p.name.toUpperCase()).join(" Y ")}!`:`¡GANA ${winner.name.toUpperCase()}!`;
@@ -1401,7 +1534,7 @@
       if (shouldSync) syncOnline("final");
     }
     function restart() {
-      $("finalScreen").classList.add("hidden"); $("startScreen").classList.remove("hidden");
+      showStartScreen();
       $("modalBackdrop").classList.add("hidden");
     }
     function toggleLocalSetup() {
