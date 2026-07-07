@@ -48,6 +48,15 @@ function publicRoom(room) {
   } : null);
 }
 
+function compactWaitingRoom(room) {
+  if (room.started || room.players[0]) return;
+  const nextHostIndex = room.players.findIndex(Boolean);
+  if (nextHostIndex > 0) {
+    room.players[0] = room.players[nextHostIndex];
+    room.players[nextHostIndex] = null;
+  }
+}
+
 function makeCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -191,6 +200,35 @@ wss.on("connection", socket => {
       room.players[index] = { name: String(message.name || `Jugador ${index + 1}`).slice(0, 16), socket, token };
       room.lastActivity = Date.now();
       send(socket, { type: "room_joined", code, playerIndex: index, isHost: index === 0, players: publicRoom(room), started: room.started, state: room.state, token });
+      broadcastRoomUpdate(room);
+      return;
+    }
+
+    if (message.type === "leave_room") {
+      const code = String(message.code || "").toUpperCase();
+      const room = rooms.get(code);
+      const index = room ? room.players.findIndex(player => player?.socket === socket) : -1;
+      if (!room || index === -1) {
+        send(socket, { type: "left_room", code });
+        return;
+      }
+
+      send(socket, { type: "left_room", code });
+      if (room.started) {
+        room.players[index].socket = null;
+        room.lastActivity = Date.now();
+        broadcast(room, { type: "peer_left", players: publicRoom(room) }, socket);
+        broadcastRoomUpdate(room);
+        return;
+      }
+
+      room.players[index] = null;
+      room.lastActivity = Date.now();
+      if (!room.players.some(Boolean)) {
+        rooms.delete(code);
+        return;
+      }
+      compactWaitingRoom(room);
       broadcastRoomUpdate(room);
       return;
     }

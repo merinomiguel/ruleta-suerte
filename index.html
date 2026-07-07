@@ -51,18 +51,55 @@
     .screen { min-height: 100vh; min-height: 100dvh; }
 
     /* Portada */
-    #startScreen, #finalScreen {
+    #startScreen {
+      display: block; padding: max(22px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+      position: relative;
+    }
+    #finalScreen {
       display: grid; place-items: center; padding: 28px; position: relative;
     }
+    .start-shell {
+      width: min(760px, 100%); margin: 0 auto; display: grid; gap: 13px;
+    }
+    .start-hero { padding-top: clamp(12px, 3vh, 28px); text-align: center; }
     .start-card, .final-card {
       width: min(720px, 100%); padding: clamp(28px, 6vw, 62px); text-align: center;
       border: 1px solid rgba(255,255,255,.13); border-radius: 32px; background: var(--panel);
       box-shadow: var(--shadow), inset 0 1px rgba(255,255,255,.1); backdrop-filter: blur(18px);
     }
+    .start-card {
+      width: 100%; padding: clamp(14px, 2.8vw, 22px); display: grid; gap: 12px; text-align: left;
+      border-radius: 22px; background: rgba(8, 14, 36, .68); box-shadow: 0 14px 38px rgba(0,0,0,.2);
+    }
     .eyebrow { margin: 0 0 10px; color: var(--cyan); font-weight: 900; letter-spacing: .24em; font-size: .75rem; }
     h1 { margin: 0; font-size: clamp(2.7rem, 9vw, 6rem); line-height: .84; letter-spacing: -.065em; }
     h1 span { display: block; color: var(--gold); text-shadow: 0 5px 0 #a96800, 0 0 32px rgba(255,213,61,.25); }
+    #startScreen h1 { font-size: clamp(1.9rem, 7vw, 4.25rem); line-height: .88; }
+    #startScreen h1 span { text-shadow: 0 3px 0 #a96800, 0 0 24px rgba(255,213,61,.22); }
     .tagline { color: #c3c9e2; margin: 25px auto 34px; max-width: 500px; font-size: 1.05rem; }
+    .start-hero .tagline { margin: 10px auto 0; max-width: 520px; font-size: clamp(.9rem, 2.2vw, 1rem); line-height: 1.38; }
+    #startScreen.is-lobby-active {
+      padding-top: max(18px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+    #startScreen.is-lobby-active .start-shell { width: min(520px, 100%); gap: 9px; }
+    #startScreen.is-lobby-active .start-hero { padding-top: 0; text-align: left; }
+    #startScreen.is-lobby-active .eyebrow { display: none; }
+    #startScreen.is-lobby-active h1 {
+      font-size: clamp(1.05rem, 4vw, 1.45rem); line-height: 1; letter-spacing: -.035em;
+    }
+    #startScreen.is-lobby-active h1 span {
+      display: inline; color: var(--gold); text-shadow: none;
+    }
+    #startScreen.is-lobby-active .tagline,
+    #startScreen.is-lobby-active .identity-card,
+    #startScreen.is-lobby-active .mode-divider,
+    #startScreen.is-lobby-active .local-toggle,
+    #startScreen.is-lobby-active .local-card {
+      display: none;
+    }
+    #startScreen.is-lobby-active .start-card {
+      padding: 0; border: 0; background: transparent; box-shadow: none; backdrop-filter: none;
+    }
     .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0 0 22px; text-align: left; }
     .optional-player { opacity: .8; }
     label { display: grid; gap: 8px; color: #c9cee6; font-weight: 800; font-size: .82rem; letter-spacing: .06em; }
@@ -70,49 +107,130 @@
       width: 100%; border: 1px solid rgba(255,255,255,.16); background: #080d26; color: white;
       padding: 15px 17px; border-radius: 12px; font-weight: 700;
     }
+    .start-card label { color: #d8def4; font-size: .76rem; letter-spacing: .035em; }
+    .start-card input {
+      min-height: 44px; background: rgba(3, 8, 26, .82); border-color: rgba(255,255,255,.13);
+      border-radius: 11px;
+    }
     .primary-btn, .action-btn, .modal-btn {
       border: 0; border-radius: 12px; padding: 15px 22px; font-weight: 950; letter-spacing: .04em;
       color: #10121b; background: linear-gradient(135deg, #ffe16c, #ffad22); box-shadow: 0 8px 25px rgba(255,174,30,.24);
       transition: transform .15s, filter .15s, opacity .15s;
     }
     .primary-btn:hover, .action-btn:hover:not(:disabled), .modal-btn:hover { transform: translateY(-2px); filter: brightness(1.07); }
-    .mode-divider { display: flex; align-items: center; gap: 12px; margin: 26px 0; color: #8792bb; font-size: .72rem; font-weight: 950; letter-spacing: .16em; }
+    .start-card .primary-btn { min-height: 44px; box-shadow: 0 8px 20px rgba(255,174,30,.18); }
+    .mode-divider { display: flex; align-items: center; gap: 12px; margin: 2px 0; color: #8792bb; font-size: .72rem; font-weight: 950; letter-spacing: .16em; }
     .mode-divider::before, .mode-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.12); }
     .online-card, .local-card {
-      display: grid; gap: 14px; margin-top: 4px; padding: 18px; border: 1px solid rgba(77,230,226,.2);
-      border-radius: 20px; background: rgba(5, 12, 34, .58); text-align: left;
+      display: grid; gap: 12px; margin-top: 0; padding: 14px; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; background: rgba(5, 12, 34, .34); text-align: left;
     }
-    .local-card { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.045); }
+    .identity-card {
+      display: block; padding: 13px; border-radius: 16px; background: rgba(255,255,255,.05);
+    }
+    .section-heading {
+      display: block;
+    }
+    .section-kicker { margin: 0 0 2px; color: var(--cyan); font-size: .68rem; font-weight: 1000; letter-spacing: .09em; text-transform: uppercase; }
+    .section-copy { margin: 0; color: #aeb8d9; font-size: .82rem; line-height: 1.32; }
+    .local-card { border-color: rgba(255,255,255,.09); background: rgba(255,255,255,.035); }
     .online-title { margin: 0; color: var(--cyan); font-size: .82rem; font-weight: 1000; letter-spacing: .16em; }
     .online-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
     .online-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .online-status {
-      min-height: 38px; display: grid; align-items: center; padding: 10px 12px; border-radius: 12px;
-      color: #cbd3ef; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08);
-      font-size: .82rem; font-weight: 800; line-height: 1.35;
+    .online-action-card {
+      display: grid; gap: 10px; align-content: space-between; min-height: 118px;
+      padding: 12px; border: 1px solid rgba(255,255,255,.065); border-radius: 14px;
+      background: rgba(255,255,255,.035);
     }
-    .online-status.good { color: #9ff4c4; border-color: rgba(84,229,154,.35); }
-    .online-status.bad { color: #ff9daa; border-color: rgba(255,83,100,.35); }
+    .online-action-card h3 { margin: 0 0 3px; font-size: .98rem; line-height: 1.08; }
+    .online-action-card p { margin: 0; color: #aeb8d9; font-size: .78rem; line-height: 1.28; }
+    .join-room-card { background: rgba(77,230,226,.04); }
+    .join-room-card .primary-btn {
+      color: #dfe7ff; background: rgba(255,255,255,.075); border: 1px solid rgba(77,230,226,.24);
+      box-shadow: none;
+    }
+    .join-room-card .primary-btn:hover { background: rgba(77,230,226,.14); }
+    .online-status {
+      min-height: 0; display: block; padding: 0 2px; border-radius: 0;
+      color: #aeb8d9; background: transparent; border: 0;
+      font-size: .82rem; font-weight: 750; line-height: 1.4;
+    }
+    .online-status:empty { display: none; }
+    .online-status.good { color: #9ff4c4; }
+    .online-status.bad { color: #ff9daa; }
     .room-code-input { text-transform: uppercase; letter-spacing: .18em; text-align: center; }
     .room-code {
-      display: inline-grid; place-items: center; padding: 4px 9px; border-radius: 9px; margin: 0 3px;
+      display: inline-grid; place-items: center; padding: 2px 8px; border-radius: 8px; margin: 0 3px;
       color: #10121b; background: var(--gold); font-weight: 1000; letter-spacing: .12em;
     }
     .online-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .online-card.room-active {
+      gap: 8px; padding: 0; border: 0; background: transparent;
+    }
+    .online-card.room-active .section-heading,
+    .online-card.room-active .online-actions {
+      display: none;
+    }
+    .online-card.room-active .online-tools {
+      order: initial;
+    }
+    .online-card.room-active .online-start {
+      order: initial;
+    }
+    .online-card.room-active .online-status {
+      order: initial; font-size: .74rem; text-align: center; color: #9faacf;
+    }
     .copy-btn {
       border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 11px 12px;
       color: #e8edff; background: rgba(255,255,255,.08); font-weight: 950; letter-spacing: .04em;
     }
     .copy-btn:hover { background: rgba(77,230,226,.16); border-color: rgba(77,230,226,.45); }
-    .local-toggle { width: 100%; color: white; background: #202d5d; box-shadow: none; border: 1px solid #3c4e8e; }
+    .leave-room-btn {
+      grid-column: 1 / -1; color: #ffc8d0; border-color: rgba(255,83,100,.32);
+      background: rgba(255,83,100,.08);
+    }
+    .leave-room-btn:hover { background: rgba(255,83,100,.16); border-color: rgba(255,83,100,.48); }
+    .local-toggle { width: 100%; color: #dfe7ff; background: rgba(255,255,255,.07); box-shadow: none; border: 1px solid rgba(255,255,255,.12); }
     .primary-btn.online-start { width: 100%; background: linear-gradient(135deg, #54e59a, #4de6e2); box-shadow: 0 8px 25px rgba(77,230,226,.22); }
     .connection-pill { border-color: rgba(77,230,226,.32); color: #aef7f4; }
-    .lobby-panel { display: grid; gap: 8px; }
+    .lobby-panel {
+      order: 1; display: grid; gap: 10px; padding: 13px; border: 1px solid rgba(77,230,226,.14);
+      border-radius: 15px; background: linear-gradient(145deg, rgba(77,230,226,.07), rgba(255,255,255,.03));
+    }
+    .lobby-summary { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .lobby-summary h3 { margin: 0 0 3px; font-size: 1rem; }
+    .lobby-summary p { margin: 0; color: #aeb8d9; font-size: .78rem; line-height: 1.3; }
+    .lobby-player-note { margin-top: 5px; color: #dfe7ff; font-size: .76rem; font-weight: 850; }
+    .lobby-code {
+      min-width: 104px; display: grid; place-items: center; gap: 2px; padding: 10px 12px;
+      border-radius: 13px; color: #12151f; background: linear-gradient(135deg, #ffe16c, #ffad22);
+      box-shadow: 0 8px 22px rgba(255,174,30,.18);
+    }
+    .lobby-code span { font-size: .58rem; font-weight: 1000; letter-spacing: .14em; text-transform: uppercase; }
+    .lobby-code strong { font-size: 1.35rem; letter-spacing: .16em; line-height: 1; }
+    .lobby-players-title {
+      margin: 0; color: #dfe7ff; font-size: .72rem; font-weight: 1000;
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    .lobby-list { display: grid; gap: 5px; }
+    .slot-info { min-width: 0; display: grid; gap: 2px; }
+    .slot-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #f6f8ff; }
+    .slot-meta { color: #9da8ca; font-size: .72rem; font-weight: 750; }
+    .lobby-slot.host { border-color: rgba(255,213,61,.28); background: rgba(255,213,61,.07); }
+    .lobby-slot.disconnected { opacity: .72; }
+    .lobby-slot.empty .slot-name { color: #9da8ca; }
+    .lobby-slot.empty .slot-meta { color: #7f89a8; }
+    .lobby-slot.host .slot-badge { background: var(--gold); }
+    .lobby-slot.disconnected .slot-badge { color: #ffd9df; background: rgba(255,83,100,.18); }
+    .lobby-slot.me .slot-name::after {
+      content: " · tú"; color: var(--cyan); font-size: .76rem; font-weight: 900;
+    }
     .lobby-slot {
       display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
-      padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.055);
-      border: 1px solid rgba(255,255,255,.08); color: #d8dff7; font-weight: 850;
+      padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.075); color: #d8dff7; font-weight: 800;
     }
+    .lobby-slot.empty { padding-block: 6px; background: rgba(255,255,255,.026); }
     .lobby-slot.empty { color: var(--muted); border-style: dashed; }
     .lobby-slot.me { border-color: rgba(77,230,226,.55); background: rgba(77,230,226,.1); }
     .lobby-slot .slot-index { color: var(--gold); font-weight: 1000; }
@@ -125,6 +243,12 @@
     .top-actions { display: flex; align-items: center; gap: 9px; }
     .sound-btn { width: 39px; height: 39px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; color: white; background: rgba(255,255,255,.08); font-size: 1rem; }
     .sound-btn:hover { background: rgba(255,255,255,.16); }
+    .exit-game-btn {
+      width: 39px; min-width: 39px; height: 39px; padding: 0; border-radius: 50%;
+      color: #ffc8d0; background: rgba(255,83,100,.1); border-color: rgba(255,83,100,.32);
+      font-size: 1.15rem; font-weight: 1000; line-height: 1;
+    }
+    .exit-game-btn:hover { background: rgba(255,83,100,.18); }
     .mini-logo { font-weight: 1000; letter-spacing: -.035em; font-size: clamp(1.25rem, 3vw, 2.15rem); }
     .mini-logo span { color: var(--gold); }
     .round-pill { padding: 9px 14px; border: 1px solid rgba(255,255,255,.15); border-radius: 999px; color: #cdd3ec; font-weight: 900; font-size: .8rem; }
@@ -175,9 +299,19 @@
     .wildcard { margin-top: 12px; padding: 10px; text-align: center; border-radius: 10px; background: rgba(255,255,255,.06); color: #8993b5; font-size: .78rem; font-weight: 900; }
     .wildcard.owned { color: #241600; background: linear-gradient(135deg, var(--gold), var(--gold-2)); }
 
-    .stage { min-width: 0; min-height: 0; }
+    .stage { min-width: 0; min-height: 0; display: grid; gap: 12px; }
+    .puzzle-panel, .turn-panel, .spin-panel { min-width: 0; }
+    .turn-panel {
+      display: grid; gap: 8px; padding: 10px; border-radius: 16px;
+      background: rgba(7,12,34,.42); border: 1px solid rgba(255,255,255,.07);
+    }
+    .spin-panel { display: grid; gap: 8px; }
     .clue-wrap { text-align: center; margin-bottom: 12px; }
-    .clue-label { color: var(--cyan); text-transform: uppercase; letter-spacing: .22em; font-size: .65rem; font-weight: 1000; }
+    .clue-label {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 14px;
+      color: #aeb8d9; letter-spacing: .02em; font-size: .72rem; font-weight: 850;
+    }
+    .clue-label strong { color: var(--cyan); font-weight: 1000; }
     #clue { margin: 3px 0 0; font-size: clamp(1.1rem, 2.5vw, 1.55rem); }
     .board {
       min-height: 205px; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; column-gap: 20px; row-gap: 10px;
@@ -229,14 +363,19 @@
     .turn-timer.paused { opacity: .55; }
 
     /* Ruleta */
-    .wheel-zone { position: relative; width: min(340px, 78vw); margin: 0 auto 8px; user-select: none; }
+    .wheel-zone {
+      position: relative; width: min(340px, 78vw); margin: 0 auto 8px;
+      user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+      touch-action: none; -webkit-tap-highlight-color: transparent;
+    }
     .wheel-zone.disabled { opacity: .62; }
     .pointer {
       position: absolute; z-index: 4; left: 50%; top: -4px; transform: translateX(-50%); width: 0; height: 0;
       border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 32px solid #ff354e;
       filter: drop-shadow(0 4px 3px rgba(0,0,0,.55));
     }
-    #wheel { width: 100%; display: block; filter: drop-shadow(0 13px 20px rgba(0,0,0,.45)); will-change: transform; touch-action: none; cursor: grab; }
+    #wheel { width: 100%; display: block; filter: drop-shadow(0 13px 20px rgba(0,0,0,.45)); will-change: transform; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    #wheel *, .wheel-zone * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     #wheel.charging { cursor: grabbing; filter: drop-shadow(0 0 24px rgba(255,213,61,.7)); }
     #wheel text { font-family: Inter, sans-serif; font-weight: 950; fill: white; font-size: 8px; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: rgba(0,0,0,.5); stroke-width: 1.5px; }
     .wheel-center { position: absolute; pointer-events: none; inset: 50% auto auto 50%; transform: translate(-50%,-50%); width: 26%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3193dd, #075397 68%, #042e61); border: 5px solid white; box-shadow: 0 3px 16px rgba(0,0,0,.5); display: grid; place-items: center; text-align: center; font-size: .56rem; font-weight: 1000; line-height: 1.05; }
@@ -259,6 +398,10 @@
     /* Selectores y diálogos */
     .choice-panel { margin: 12px auto 0; padding: 15px; max-width: 620px; text-align: center; background: var(--panel); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; }
     .choice-panel p { margin: 0 0 10px; font-weight: 850; }
+    #gameScreen.is-choosing .spin-panel { opacity: .72; }
+    #gameScreen.is-choosing .choice-panel {
+      border-color: rgba(77,230,226,.36); box-shadow: 0 14px 36px rgba(0,0,0,.34);
+    }
     .keyboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; }
     .key { min-width: 38px; border: 1px solid #4c5d97; border-radius: 8px; padding: 9px 10px; color: white; background: #23305f; font-weight: 1000; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
     .key:disabled { opacity: .58; transform: scale(.96); }
@@ -274,6 +417,7 @@
     .modal input { margin: 8px 0 13px; text-transform: uppercase; }
     .modal-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
     .modal-btn.alt { color: white; background: #29365e; box-shadow: none; }
+    .modal-btn.danger { color: white; background: linear-gradient(135deg, #ff5364, #b51f35); box-shadow: 0 8px 24px rgba(255,83,100,.22); }
 
     .final-card .trophy { font-size: 4rem; margin-bottom: 6px; }
     .final-card h2 { margin: 0; color: var(--gold); font-size: clamp(2rem, 7vw, 4rem); }
@@ -356,48 +500,54 @@
     }
 
     @media (max-width: 900px) {
-      body.playing { overflow: hidden; }
+      body.playing { overflow-y: auto; overscroll-behavior-y: contain; }
       #gameScreen {
-        height: 100vh; height: 100dvh; min-height: 0; overflow: hidden;
-        display: flex; flex-direction: column;
-        padding: max(6px, env(safe-area-inset-top)) 8px max(6px, env(safe-area-inset-bottom));
+        min-height: 100vh; min-height: 100dvh; height: auto; overflow: visible;
+        display: block;
+        padding: max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));
       }
-      .topbar { flex: 0 0 auto; gap: 8px; margin-bottom: 6px; }
-      .mini-logo { max-width: 44vw; font-size: clamp(.9rem, 4vw, 1.2rem); line-height: .92; }
+      .topbar { gap: 8px; margin-bottom: 8px; align-items: center; }
+      .mini-logo { max-width: 34vw; font-size: clamp(.82rem, 3.4vw, 1.05rem); line-height: .95; }
       .top-actions { gap: 6px; }
       .sound-btn { width: 32px; height: 32px; font-size: .82rem; flex: 0 0 auto; }
+      .exit-game-btn { width: 32px; min-width: 32px; height: 32px; padding: 0; font-size: 1rem; }
       .round-pill { padding: 6px 8px; font-size: .62rem; white-space: nowrap; }
-      .connection-pill { max-width: 34vw; overflow: hidden; text-overflow: ellipsis; }
-      .game-grid { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
-      .players-panel { flex: 0 0 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .connection-pill { max-width: 28vw; overflow: hidden; text-overflow: ellipsis; }
+      .game-grid { min-height: 0; overflow: visible; display: grid; gap: 8px; align-items: stretch; }
+      .players-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
       .player-card {
-        padding: 6px 8px; border-radius: 11px; box-shadow: none;
+        padding: 8px 9px; border-radius: 10px; box-shadow: none;
         min-height: 0; border-color: rgba(255,255,255,.08);
+        background: rgba(12,20,51,.62);
       }
-      .player-card.active { transform: none; box-shadow: 0 0 0 1px var(--cyan), 0 0 14px rgba(77,230,226,.18); }
+      .player-card.active { transform: none; border-color: rgba(77,230,226,.7); background: rgba(77,230,226,.09); box-shadow: 0 0 0 1px rgba(77,230,226,.45); }
       .player-tag { display: none; }
-      .player-card h2 { margin: 0 0 4px; font-size: .82rem; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .money-block { display: inline-block; width: 49%; padding: 0; border-top: 0; }
-      .money-block small { margin-bottom: 1px; font-size: .46rem; letter-spacing: .02em; }
+      .player-card h2 { margin: 0 0 6px; font-size: .82rem; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .money-block { display: inline-grid; width: 49%; gap: 1px; padding: 0; border-top: 0; }
+      .money-block small { margin-bottom: 0; font-size: .52rem; letter-spacing: .01em; text-transform: none; }
       .money { font-size: .82rem; line-height: 1.05; }
       .wildcard { display: none; }
-      .stage { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-      .clue-wrap { flex: 0 0 auto; margin-bottom: 4px; }
-      .clue-label { font-size: .48rem; letter-spacing: .14em; }
+      .stage { min-height: 0; display: grid; gap: 8px; }
+      .puzzle-panel {
+        padding: 10px; border-radius: 14px; background: rgba(7,12,34,.42);
+        border: 1px solid rgba(255,255,255,.07);
+      }
+      .clue-wrap { margin-bottom: 7px; text-align: left; }
+      .clue-label { justify-content: flex-start; gap: 4px 10px; font-size: .62rem; letter-spacing: 0; }
       #clue {
-        margin-top: 2px; font-size: clamp(.76rem, 3.15vw, .92rem); line-height: 1.08;
+        margin-top: 4px; font-size: clamp(.92rem, 4.1vw, 1.16rem); line-height: 1.2;
         display: block; overflow: visible;
       }
-      .jackpot { flex: 0 0 auto; margin: 2px auto 4px; padding: 5px 12px; font-size: .78rem; border-width: 1px; }
-      .jackpot.compact { padding: 4px 10px; font-size: .68rem; }
+      .jackpot { margin: 0 0 7px; width: fit-content; padding: 5px 10px; font-size: .76rem; border-width: 1px; box-shadow: none; animation: none; }
+      .jackpot.compact { padding: 4px 9px; font-size: .68rem; }
       .jackpot-rule { display: none; }
       .board {
-        flex: 0 0 auto; min-height: clamp(78px, 15dvh, 118px); max-height: 17dvh; overflow: hidden;
-        padding: 7px; column-gap: 8px; row-gap: 5px; border-width: 4px; border-radius: 12px;
-        box-shadow: inset 0 0 18px rgba(0,0,0,.35), 0 10px 26px rgba(0,0,0,.28);
+        min-height: clamp(112px, 19dvh, 164px); max-height: none; overflow: visible;
+        padding: 10px 8px; column-gap: 8px; row-gap: 6px; border-width: 3px; outline-width: 1px; border-radius: 12px;
+        box-shadow: inset 0 0 18px rgba(0,0,0,.28), 0 8px 18px rgba(0,0,0,.22);
       }
       .word { gap: 3px; }
-      .letter { width: clamp(15px, 5.2vw, 23px); border-radius: 3px; font-size: clamp(.68rem, 4.3vw, .95rem); box-shadow: inset 0 0 0 1px white, 0 2px 0 #7b8b9b; }
+      .letter { width: clamp(16px, 5vw, 25px); border-radius: 3px; font-size: clamp(.72rem, 4vw, 1rem); box-shadow: inset 0 0 0 1px white, 0 2px 0 #7b8b9b; }
       .letter.covered { font-size: .48rem; }
       .board.long { column-gap: 6px; row-gap: 4px; }
       .board.long .word { gap: 2px; }
@@ -407,28 +557,32 @@
       .board.ultra-long { column-gap: 3px; row-gap: 2px; padding-inline: 4px; }
       .board.ultra-long .word { gap: 1px; }
       .board.ultra-long .letter { width: clamp(9px, 3.25vw, 14px); font-size: clamp(.48rem, 2.75vw, .66rem); }
+      .turn-panel { gap: 7px; padding: 9px; border-radius: 13px; }
       .status {
-        flex: 0 0 auto; min-height: 34px; max-height: 44px; overflow: hidden;
-        margin: 5px 0; padding: 6px 9px; border-radius: 10px; font-size: .68rem; line-height: 1.15;
+        min-height: 42px; max-height: none; overflow: visible;
+        margin: 0; padding: 9px 11px; border-radius: 11px; font-size: .82rem; line-height: 1.22;
+        background: rgba(20,31,72,.88);
       }
-      .remote-banner { flex: 0 0 auto; margin: -1px auto 4px; padding: 6px 10px; font-size: .55rem; width: min(300px, 96%); }
-      .turn-timer { flex: 0 0 auto; width: min(300px, 76vw); margin-bottom: 4px; gap: 7px; font-size: .54rem; }
+      .remote-banner { margin: 0 auto; padding: 6px 10px; font-size: .55rem; width: min(300px, 96%); }
+      .turn-timer { width: 100%; margin: 0; gap: 7px; font-size: .56rem; letter-spacing: .06em; }
       .timer-track { height: 8px; }
-      .wheel-zone { flex: 0 0 auto; width: min(304px, 37dvh, 78vw); margin-bottom: 1px; }
+      .spin-panel { gap: 6px; padding: 8px 0 0; }
+      .wheel-zone { width: min(292px, 39dvh, 78vw); margin-bottom: 0; }
       .pointer { top: -2px; border-left-width: 10px; border-right-width: 10px; border-top-width: 22px; }
       #wheel { filter: drop-shadow(0 8px 13px rgba(0,0,0,.42)); }
       #wheel text { font-size: 8.8px; stroke-width: 1.25px; }
       .wheel-center { border-width: 3px; font-size: .5rem; }
       .wheel-center small { font-size: .38rem; }
-      .spin-hint { flex: 0 0 auto; margin: 1px 0 3px; font-size: .56rem; letter-spacing: .02em; line-height: 1.1; }
-      .power-meter { flex: 0 0 auto; width: min(300px, 76vw); margin-bottom: 5px; }
-      .power-label { margin-bottom: 2px; font-size: .52rem; }
-      .power-track { height: 8px; }
-      .actions { flex: 0 0 auto; gap: 6px; flex-wrap: nowrap; }
-      .action-btn { flex: 1 1 0; min-width: 0; padding: 8px 8px; font-size: .62rem; line-height: 1.05; }
+      .spin-hint { margin: 0; font-size: .64rem; letter-spacing: .01em; line-height: 1.2; }
+      .power-meter { width: min(310px, 82vw); margin: 0 auto 4px; }
+      .power-label { margin-bottom: 3px; font-size: .56rem; letter-spacing: .04em; }
+      .power-track { height: 9px; }
+      .actions { gap: 7px; flex-wrap: nowrap; }
+      .action-btn { flex: 1 1 0; min-width: 0; padding: 10px 8px; font-size: .66rem; line-height: 1.05; border-radius: 11px; }
       .letters-used {
-        flex: 0 0 auto; min-height: 27px; max-height: 31px; overflow: hidden;
-        margin-top: 4px; padding: 6px 8px; border-radius: 10px; white-space: nowrap; text-overflow: ellipsis;
+        min-height: 0; max-height: none; overflow: hidden;
+        margin-top: 0; padding: 7px 9px; border-radius: 10px; white-space: nowrap; text-overflow: ellipsis;
+        background: rgba(7,12,34,.48);
       }
       .letters-used span:first-child { font-size: .52rem; }
       #usedLetters { margin-left: 5px; font-size: .64rem; letter-spacing: .08em; }
@@ -442,9 +596,39 @@
       .keyboard { gap: 5px; }
       .key { min-width: 36px; min-height: 34px; padding: 7px 9px; border-radius: 9px; font-size: .84rem; }
     }
+    @media (max-width: 720px) {
+      #startScreen {
+        padding: max(28px, calc(env(safe-area-inset-top) + 12px)) 12px max(16px, env(safe-area-inset-bottom));
+      }
+      .start-shell { gap: 10px; }
+      .start-hero { text-align: left; padding-inline: 2px; }
+      #startScreen .eyebrow { margin-bottom: 5px; font-size: .6rem; letter-spacing: .14em; }
+      #startScreen h1 { font-size: clamp(1.72rem, 10.8vw, 2.8rem); line-height: .9; }
+      .start-hero .tagline { margin-top: 7px; font-size: .82rem; line-height: 1.28; }
+      .start-card { padding: 10px; gap: 9px; border-radius: 18px; }
+      .identity-card { padding: 10px; border-radius: 13px; }
+      .online-card, .local-card { padding: 11px; border-radius: 13px; gap: 9px; }
+      .online-actions { grid-template-columns: 1fr; gap: 8px; }
+      .online-action-card { min-height: 0; padding: 10px; gap: 8px; }
+      .online-action-card h3 { font-size: .92rem; }
+      .online-action-card p, .section-copy, .online-status { font-size: .74rem; }
+      .section-kicker { font-size: .62rem; letter-spacing: .08em; }
+      .mode-divider { margin: -1px 0; font-size: .58rem; letter-spacing: .1em; }
+      .start-card .primary-btn { width: 100%; min-height: 40px; padding: 10px 14px; border-radius: 11px; }
+      .start-card input { min-height: 40px; padding: 11px 13px; border-radius: 10px; }
+      .copy-btn { padding: 10px 11px; }
+      .lobby-panel { padding: 12px; gap: 10px; }
+      .lobby-summary { grid-template-columns: 1fr; }
+      .lobby-code { width: 100%; min-width: 0; padding: 9px 11px; }
+      .lobby-code strong { font-size: 1.26rem; }
+      .lobby-slot { grid-template-columns: auto 1fr; gap: 8px; }
+      .lobby-slot .slot-badge { justify-self: start; grid-column: 2; }
+    }
+
     @media (max-width: 520px) {
       .name-grid { grid-template-columns: 1fr; }
       .online-row, .online-actions, .online-tools { grid-template-columns: 1fr; }
+      .online-row { align-items: stretch; }
       .players-panel { grid-template-columns: 1fr 1fr; gap: 5px; }
       .mini-logo { max-width: 38vw; }
       .round-pill { padding-inline: 7px; }
@@ -457,26 +641,27 @@
       .topbar { margin-bottom: 4px; }
       .mini-logo { font-size: .84rem; }
       .sound-btn { width: 29px; height: 29px; }
+      .exit-game-btn { width: 29px; min-width: 29px; height: 29px; padding: 0; font-size: .92rem; }
       .round-pill { padding: 5px 7px; font-size: .56rem; }
       .player-card { padding: 5px 6px; }
       .player-card h2 { font-size: .72rem; margin-bottom: 3px; }
       .money-block small { display: none; }
       .money { font-size: .72rem; }
-      .clue-label { font-size: .43rem; }
-      #clue { font-size: .7rem; line-height: 1.05; }
-      .jackpot { margin-bottom: 3px; padding-block: 4px; font-size: .66rem; }
-      .board { min-height: 68px; max-height: 15dvh; padding: 5px; border-width: 3px; row-gap: 3px; }
+      .clue-label { font-size: .56rem; }
+      #clue { font-size: .86rem; line-height: 1.16; }
+      .jackpot { margin-bottom: 5px; padding-block: 4px; font-size: .66rem; }
+      .board { min-height: 96px; max-height: none; padding: 7px 5px; border-width: 3px; row-gap: 4px; }
       .letter { width: clamp(13px, 4.7vw, 20px); font-size: .72rem; }
       .board.long .letter { width: clamp(11px, 4vw, 17px); font-size: .64rem; }
       .board.extra-long .letter { width: clamp(9px, 3.5vw, 14px); font-size: .56rem; }
       .wheel-zone { width: min(250px, 34dvh, 70vw); }
       .power-meter, .turn-timer { width: min(250px, 70vw); }
-      .status { min-height: 30px; max-height: 36px; margin: 4px 0; padding: 5px 8px; font-size: .62rem; }
-      .spin-hint { font-size: .5rem; }
+      .status { min-height: 38px; max-height: none; margin: 0; padding: 8px; font-size: .72rem; }
+      .spin-hint { font-size: .58rem; }
       .actions { gap: 5px; }
       .action-btn { padding: 7px 6px; font-size: .56rem; }
       .letters-used { min-height: 24px; max-height: 27px; padding-block: 5px; }
-      .remote-banner { display: none; }
+      .remote-banner { display: block; margin: 0 auto 3px; padding: 5px 8px; font-size: .46rem; max-width: 96%; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
@@ -484,41 +669,68 @@
 <body>
   <main>
     <section id="startScreen" class="screen">
-      <div class="start-card">
-        <p class="eyebrow">EL CONCURSO EN CASA</p>
-        <h1>LA RULETA <span>DE LA SUERTE</span></h1>
-        <p class="tagline">Cinco paneles, una ruleta y todo por decidir. ¿Quién se llevará la victoria?</p>
-        <div class="online-card">
-          <p class="online-title">SALAS PRIVADAS</p>
-          <label>TU NOMBRE<input id="onlineName" maxlength="16" value="Jugador" autocomplete="off"></label>
-          <div class="online-actions">
-            <button id="createRoomBtn" class="primary-btn" type="button">CREAR SALA</button>
-            <div class="online-row">
-              <label>CÓDIGO<input id="roomCodeInput" class="room-code-input" maxlength="6" placeholder="ABCD" autocomplete="off"></label>
-              <button id="joinRoomBtn" class="primary-btn" type="button">ENTRAR</button>
+      <div class="start-shell">
+        <header class="start-hero">
+          <p class="eyebrow">El concurso en casa</p>
+          <h1>LA RULETA <span>DE LA SUERTE</span></h1>
+          <p class="tagline">Crea una sala, comparte el código y juega desde casa.</p>
+        </header>
+        <div class="start-card">
+          <div class="identity-card">
+            <label>Tu nombre<input id="onlineName" maxlength="16" value="Jugador" autocomplete="off"></label>
+          </div>
+
+          <div class="online-card">
+            <div class="section-heading">
+              <p class="section-kicker">Jugar online</p>
+              <p class="section-copy">Crea una sala o entra con un código.</p>
+            </div>
+            <div id="lobbyPanel" class="lobby-panel hidden" aria-label="Jugadores en la sala"></div>
+            <div id="onlineTools" class="online-tools hidden">
+              <button id="copyCodeBtn" class="copy-btn" type="button">Copiar código</button>
+              <button id="copyLinkBtn" class="copy-btn" type="button">Compartir enlace</button>
+              <button id="leaveRoomBtn" class="copy-btn leave-room-btn" type="button" onclick="leaveRoom()">Volver</button>
+            </div>
+            <button id="onlineStartBtn" class="primary-btn online-start hidden" type="button">Empezar sala online →</button>
+            <div id="onlineStatus" class="online-status"></div>
+            <div class="online-actions">
+              <article class="online-action-card create-room-card">
+                <div>
+                  <h3>Crear sala</h3>
+                  <p>Comparte el código con tus jugadores.</p>
+                </div>
+                <button id="createRoomBtn" class="primary-btn" type="button" onclick="createRoom()">Crear sala</button>
+              </article>
+              <article class="online-action-card join-room-card">
+                <div>
+                  <h3>Entrar con código</h3>
+                  <p>Únete a una sala creada.</p>
+                </div>
+                <div class="online-row">
+                  <label>Código<input id="roomCodeInput" class="room-code-input" maxlength="6" placeholder="ABCD" autocomplete="off"></label>
+                  <button id="joinRoomBtn" class="primary-btn" type="button">Entrar</button>
+                </div>
+              </article>
             </div>
           </div>
-          <div id="onlineStatus" class="online-status">Crea una sala para obtener un código, o entra con el código de otra persona. Se puede empezar con 2 y jugar hasta 4.</div>
-          <div id="lobbyPanel" class="lobby-panel hidden" aria-label="Jugadores en la sala"></div>
-          <div id="onlineTools" class="online-tools hidden">
-            <button id="copyCodeBtn" class="copy-btn" type="button">COPIAR CÓDIGO</button>
-            <button id="copyLinkBtn" class="copy-btn" type="button">COPIAR ENLACE</button>
-          </div>
-          <button id="onlineStartBtn" class="primary-btn online-start hidden" type="button">EMPEZAR SALA ONLINE →</button>
-        </div>
-        <div class="mode-divider">O EN ESTE DISPOSITIVO</div>
-        <button id="showLocalBtn" class="primary-btn local-toggle" type="button">JUGAR PARTIDA LOCAL</button>
-        <div id="localSetup" class="local-card hidden">
-          <p class="online-title">PARTIDA LOCAL</p>
-          <form id="startForm">
-            <div class="name-grid">
-              <label>JUGADOR 1<input id="name1" maxlength="16" value="Jugador 1" required autocomplete="off"></label>
-              <label>JUGADOR 2<input id="name2" maxlength="16" value="Jugador 2" required autocomplete="off"></label>
-              <label class="optional-player">JUGADOR 3 · OPCIONAL<input id="name3" maxlength="16" placeholder="Jugador 3" autocomplete="off"></label>
-              <label class="optional-player">JUGADOR 4 · OPCIONAL<input id="name4" maxlength="16" placeholder="Jugador 4" autocomplete="off"></label>
+
+          <div class="mode-divider">Alternativa</div>
+          <button id="showLocalBtn" class="primary-btn local-toggle" type="button">Jugar en este dispositivo</button>
+          <div id="localSetup" class="local-card hidden">
+            <div class="section-heading">
+              <p class="section-kicker">Partida local</p>
+              <p class="section-copy">Todos juegan en la misma pantalla.</p>
             </div>
-            <button class="primary-btn" type="submit">EMPEZAR PARTIDA LOCAL →</button>
-          </form>
+            <form id="startForm">
+              <div class="name-grid">
+                <label>Jugador 1<input id="name1" maxlength="16" value="Jugador 1" required autocomplete="off"></label>
+                <label>Jugador 2<input id="name2" maxlength="16" value="Jugador 2" required autocomplete="off"></label>
+                <label class="optional-player">Jugador 3 · opcional<input id="name3" maxlength="16" placeholder="Jugador 3" autocomplete="off"></label>
+                <label class="optional-player">Jugador 4 · opcional<input id="name4" maxlength="16" placeholder="Jugador 4" autocomplete="off"></label>
+              </div>
+              <button class="primary-btn" type="submit">Empezar partida local →</button>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -526,60 +738,66 @@
     <section id="gameScreen" class="screen hidden">
       <header class="topbar">
         <div class="mini-logo">LA RULETA <span>DE LA SUERTE</span></div>
-        <div class="top-actions"><button id="soundBtn" class="sound-btn" aria-label="Silenciar sonidos" title="Activar o silenciar sonidos">🔊</button><div id="roomLabel" class="round-pill connection-pill hidden"></div><div id="roundLabel" class="round-pill">PANEL 1 DE 5</div></div>
+        <div class="top-actions"><button id="soundBtn" class="sound-btn" aria-label="Silenciar sonidos" title="Activar o silenciar sonidos">🔊</button><button id="exitGameBtn" class="sound-btn exit-game-btn" type="button" aria-label="Salir de la partida" title="Salir de la partida">×</button><div id="roomLabel" class="round-pill connection-pill hidden"></div><div id="roundLabel" class="round-pill">Panel 1/5</div></div>
       </header>
       <div class="game-grid">
         <section id="playersPanel" class="players-panel" aria-label="Jugadores">
           <aside id="playerCard0" class="player-card">
             <div class="player-tag">Jugador 1</div><h2 id="playerName0">Jugador 1</h2>
-            <div class="money-block"><small>EN ESTE PANEL</small><div id="roundMoney0" class="money">0 €</div></div>
-            <div class="money-block"><small>TOTAL</small><div id="totalMoney0" class="money total">0 €</div></div>
+            <div class="money-block"><small>Panel</small><div id="roundMoney0" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney0" class="money total">0 €</div></div>
             <div id="wildcard0" class="wildcard">◇ SIN COMODÍN</div>
           </aside>
           <aside id="playerCard1" class="player-card">
             <div class="player-tag">Jugador 2</div><h2 id="playerName1">Jugador 2</h2>
-            <div class="money-block"><small>EN ESTE PANEL</small><div id="roundMoney1" class="money">0 €</div></div>
-            <div class="money-block"><small>TOTAL</small><div id="totalMoney1" class="money total">0 €</div></div>
+            <div class="money-block"><small>Panel</small><div id="roundMoney1" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney1" class="money total">0 €</div></div>
             <div id="wildcard1" class="wildcard">◇ SIN COMODÍN</div>
           </aside>
           <aside id="playerCard2" class="player-card hidden">
             <div class="player-tag">Jugador 3</div><h2 id="playerName2">Jugador 3</h2>
-            <div class="money-block"><small>EN ESTE PANEL</small><div id="roundMoney2" class="money">0 €</div></div>
-            <div class="money-block"><small>TOTAL</small><div id="totalMoney2" class="money total">0 €</div></div>
+            <div class="money-block"><small>Panel</small><div id="roundMoney2" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney2" class="money total">0 €</div></div>
             <div id="wildcard2" class="wildcard">◇ SIN COMODÍN</div>
           </aside>
           <aside id="playerCard3" class="player-card hidden">
             <div class="player-tag">Jugador 4</div><h2 id="playerName3">Jugador 4</h2>
-            <div class="money-block"><small>EN ESTE PANEL</small><div id="roundMoney3" class="money">0 €</div></div>
-            <div class="money-block"><small>TOTAL</small><div id="totalMoney3" class="money total">0 €</div></div>
+            <div class="money-block"><small>Panel</small><div id="roundMoney3" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney3" class="money total">0 €</div></div>
             <div id="wildcard3" class="wildcard">◇ SIN COMODÍN</div>
           </aside>
         </section>
 
         <section class="stage">
-          <div class="clue-wrap">
-            <div class="clue-label"><span id="category">CATEGORÍA</span> · <span id="difficulty">DIFICULTAD</span></div>
-            <h2 id="clue"></h2>
+          <div class="puzzle-panel">
+            <div class="clue-wrap">
+              <div class="clue-label"><span>Categoría: <strong id="category">Categoría</strong></span><span>Dificultad: <strong id="difficulty">Dificultad</strong></span></div>
+              <h2 id="clue"></h2>
+            </div>
+            <div id="jackpot" class="jackpot hidden">🎯 BOTE: 1.000 €</div>
+            <div id="jackpotRule" class="jackpot-rule"></div>
+            <div id="board" class="board" aria-label="Panel de frase"></div>
           </div>
-          <div id="jackpot" class="jackpot hidden">🎯 BOTE: 1.000 €</div>
-          <div id="jackpotRule" class="jackpot-rule"></div>
-          <div id="board" class="board" aria-label="Panel de frase"></div>
-          <div id="status" class="status" role="status" aria-live="polite">Todo listo. ¡Gira la ruleta!</div>
-          <div id="remoteBanner" class="remote-banner hidden" aria-live="polite"></div>
-          <div id="turnTimer" class="turn-timer" aria-label="Temporizador de turno">
-            <span id="timerLabel">TURNO</span>
-            <div class="timer-track"><div id="timerFill" class="timer-fill"></div></div>
-            <strong id="timerValue">30s</strong>
+          <div class="turn-panel">
+            <div id="status" class="status" role="status" aria-live="polite">Todo listo. ¡Gira la ruleta!</div>
+            <div id="remoteBanner" class="remote-banner hidden" aria-live="polite"></div>
+            <div id="turnTimer" class="turn-timer" aria-label="Temporizador de turno">
+              <span id="timerLabel">TURNO</span>
+              <div class="timer-track"><div id="timerFill" class="timer-fill"></div></div>
+              <strong id="timerValue">30s</strong>
+            </div>
           </div>
-          <div class="wheel-zone">
-            <div class="pointer" aria-hidden="true"></div>
-            <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
-            <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
-          </div>
-          <div id="spinHint" class="spin-hint">MANTÉN PULSADA LA RULETA PARA CARGAR</div>
-          <div class="power-meter" aria-label="Fuerza del giro">
-            <div class="power-label"><span>FUERZA</span><span id="powerValue">0%</span></div>
-            <div class="power-track"><div id="powerFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+          <div class="spin-panel">
+            <div class="wheel-zone">
+              <div class="pointer" aria-hidden="true"></div>
+              <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
+              <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
+            </div>
+            <div id="spinHint" class="spin-hint">Mantén pulsada la ruleta para cargar</div>
+            <div class="power-meter" aria-label="Fuerza del giro">
+              <div class="power-label"><span>Fuerza</span><span id="powerValue">0%</span></div>
+              <div id="forceBar" class="power-track"><div id="powerFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+            </div>
           </div>
           <div class="actions">
             <button id="vowelBtn" class="action-btn secondary">COMPRAR VOCAL · 50 €</button>
@@ -588,7 +806,7 @@
           <div id="choicePanel" class="choice-panel hidden"><p id="choiceTitle"></p><div id="keyboard" class="keyboard"></div></div>
           <div class="letters-used"><span>Letras usadas</span><span id="usedLetters">—</span></div>
         </section>
-        <aside class="match-log" aria-label="Historial de partida">
+        <aside id="matchLog" class="match-log" aria-label="Historial de partida">
           <h3>Historial</h3>
           <div id="logList" class="log-list"></div>
           <div id="logEmpty" class="log-empty">Las acciones aparecerán aquí.</div>
@@ -1020,6 +1238,9 @@
     function safeStorageSet(key,value) {
       try { localStorage.setItem(key,value); } catch (_) {}
     }
+    function safeStorageRemove(key) {
+      try { localStorage.removeItem(key); } catch (_) {}
+    }
     function getPlayerToken() {
       let token=safeStorageGet("ruletaPlayerToken");
       if (!token) {
@@ -1062,35 +1283,130 @@
     }
     function updateRoomTools() {
       $("onlineTools").classList.toggle("hidden",!online.roomCode);
+      document.querySelector(".online-card")?.classList.toggle("room-active",Boolean(online.roomCode));
+      $("startScreen").classList.toggle("is-lobby-active",Boolean(online.roomCode));
+    }
+    function restoreOnlineControls() {
+      const card=document.querySelector(".online-card"), actions=document.querySelector(".online-actions");
+      if (!card || !actions) return;
+      ["onlineTools","onlineStartBtn","onlineStatus"].forEach(id=>{
+        const el=$(id);
+        if (el && el.parentElement!==card) card.insertBefore(el,actions);
+      });
     }
     function renderLobby(players=online.players) {
       const panel=$("lobbyPanel");
       if (!panel) return;
       panel.classList.toggle("hidden",!online.roomCode);
+      const tools=$("onlineTools"), startButton=$("onlineStartBtn"), status=$("onlineStatus");
+      [tools,startButton,status].forEach(el=>{ if (el?.parentElement===panel) panel.removeChild(el); });
       panel.innerHTML="";
-      if (!online.roomCode) return;
+      if (!online.roomCode) { restoreOnlineControls(); return; }
+      const summary=document.createElement("div"); summary.className="lobby-summary";
+      const copy=document.createElement("div");
+      const title=document.createElement("h3"); title.textContent="Sala privada";
+      const hint=document.createElement("p"); hint.textContent="Compártelo con tus jugadores.";
+      const currentSeat=players[online.playerIndex];
+      const note=document.createElement("p"); note.className="lobby-player-note";
+      note.textContent=currentSeat ? `${currentSeat.name} · ${online.isHost ? "Anfitrión" : "Invitado"}` : "";
+      copy.append(title,hint,note);
+      const code=document.createElement("div"); code.className="lobby-code";
+      const codeLabel=document.createElement("span"); codeLabel.textContent="Código";
+      const codeValue=document.createElement("strong"); codeValue.textContent=online.roomCode;
+      code.append(codeLabel,codeValue);
+      summary.append(copy,code); panel.appendChild(summary);
+      if (tools) panel.appendChild(tools);
+      if (startButton) panel.appendChild(startButton);
+      const playersTitle=document.createElement("p"); playersTitle.className="lobby-players-title"; playersTitle.textContent="Jugadores conectados";
+      panel.appendChild(playersTitle);
+      const list=document.createElement("div"); list.className="lobby-list";
       for (let i=0;i<MAX_PLAYERS;i++) {
         const player=players[i], slot=document.createElement("div");
-        slot.className=`lobby-slot ${player?"":"empty"} ${i===online.playerIndex?"me":""}`.trim();
+        const host=i===0 && player, me=i===online.playerIndex;
+        const connectionClass=player ? (player.connected ? "connected" : "disconnected") : "empty";
+        slot.className=`lobby-slot ${connectionClass} ${host?"host":""} ${me?"me":""}`.trim();
         const index=document.createElement("span"); index.className="slot-index"; index.textContent=`J${i+1}`;
-        const name=document.createElement("span"); name.textContent=player ? `${player.name}${player.connected?"":" · desconectado"}` : "Esperando jugador";
+        const info=document.createElement("span"); info.className="slot-info";
+        const name=document.createElement("span"); name.className="slot-name"; name.textContent=player ? player.name : "Hueco libre";
+        const meta=document.createElement("span"); meta.className="slot-meta";
+        meta.textContent=player ? (host ? "Anfitrión" : (player.connected ? "Listo para jugar" : "Sin conexión")) : "Esperando jugador";
+        info.append(name,meta);
         const badge=document.createElement("span"); badge.className="slot-badge";
-        badge.textContent=i===0&&player?"ANFITRIÓN":(player?(player.connected?"LISTO":"OFF"):"LIBRE");
-        slot.append(index,name,badge); panel.appendChild(slot);
+        badge.textContent=host?"ANFITRIÓN":(player?(player.connected?"LISTO":"OFF"):"LIBRE");
+        slot.append(index,info,badge); list.appendChild(slot);
       }
+      panel.appendChild(list);
+      if (status) panel.appendChild(status);
     }
     function copyRoomCode() {
       if (!online.roomCode) return;
       copyText(online.roomCode, `Código ${roomCodeMarkup(online.roomCode)} copiado.`);
     }
-    function copyRoomLink() {
+    async function copyRoomLink() {
       if (!online.roomCode) return;
-      copyText(shareUrl(), `Enlace de sala copiado. Quien lo abra tendrá el código ${roomCodeMarkup(online.roomCode)} listo.`);
+      const url=shareUrl();
+      const shareData={
+        title:"La Ruleta de la Suerte",
+        text:`Únete a mi sala ${online.roomCode} en La Ruleta de la Suerte.`,
+        url
+      };
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          setOnlineStatus(`Enlace de sala compartido. Quien lo abra tendrá el código ${roomCodeMarkup(online.roomCode)} listo.`,"good");
+          return;
+        } catch (error) {
+          if (error?.name==="AbortError") return;
+        }
+      }
+      copyText(url, `Enlace de sala copiado. Quien lo abra tendrá el código ${roomCodeMarkup(online.roomCode)} listo.`);
+    }
+    function resetOnlineRoom(message="Has salido de la sala.") {
+      const socket=online.socket;
+      online.manualClose=true;
+      stopHeartbeat();
+      clearTimeout(online.reconnectTimer);
+      online.reconnectTimer=0;
+      online.pendingOpenActions=[];
+      online.enabled=false; online.connected=false; online.socket=null; online.roomCode=""; online.playerIndex=null;
+      online.isHost=false; online.applyingRemote=false; online.started=false; online.players=[]; online.autoRejoining=false;
+      safeStorageRemove("ruletaLastRoom");
+      if (socket && socket.readyState!==WebSocket.CLOSED && socket.readyState!==WebSocket.CLOSING) {
+        try { socket.close(1000,"leave_room"); } catch (_) {}
+      }
+      $("roomCodeInput").value="";
+      $("createRoomBtn").disabled=false;
+      $("joinRoomBtn").disabled=false;
+      $("onlineStartBtn").classList.add("hidden");
+      updateRoomTools();
+      renderLobby([]);
+      setOnlineStatus(message,"good");
+      showStartScreen();
+    }
+    function leaveRoom() {
+      if (!online.roomCode) { resetOnlineRoom(); return; }
+      const code=online.roomCode;
+      sendOnline({type:"leave_room",code});
+      resetOnlineRoom("Has salido de la sala.");
+    }
+    function leaveCurrentGame() {
+      $("modalBackdrop").classList.add("hidden");
+      hideChoices();
+      stopTurnTimer();
+      state.finished=true; state.screen="start"; state.activity="";
+      if (online.enabled && online.roomCode) leaveRoom();
+      else {
+        online.enabled=false; online.started=false;
+        showStartScreen();
+      }
     }
     function wsUrl() {
       const protocol=location.protocol==="https:"?"wss":"ws";
       const host=location.protocol==="file:"?"localhost:3000":location.host;
       return `${protocol}://${host}`;
+    }
+    function appUrl() {
+      return location.protocol==="file:" ? "http://localhost:3000" : `${location.protocol}//${location.host}`;
     }
     function stopHeartbeat() {
       clearInterval(online.heartbeatTimer);
@@ -1123,25 +1439,31 @@
       }
       online.pendingOpenActions = onOpen ? [onOpen] : [];
       online.manualClose=false;
-      setOnlineStatus("Conectando con el servidor…");
+      setOnlineStatus(`Conectando con ${location.protocol==="file:"?"localhost:3000":location.host}…`);
       const socket=new WebSocket(wsUrl()); online.socket=socket;
       socket.addEventListener("open",()=>{
+        if (online.socket!==socket) return;
         online.connected=true; online.reconnectAttempts=0; startHeartbeat();
         const actions=[...online.pendingOpenActions];
         online.pendingOpenActions=[];
         actions.forEach(action=>action());
       });
-      socket.addEventListener("message",event=>handleOnlineMessage(JSON.parse(event.data)));
+      socket.addEventListener("message",event=>{
+        if (online.socket!==socket) return;
+        handleOnlineMessage(JSON.parse(event.data));
+      });
       socket.addEventListener("close",()=>{
+        if (online.socket!==socket) return;
         online.connected=false; stopHeartbeat();
         online.socket=null;
         online.pendingOpenActions=[];
         if (online.enabled && !state.finished) setStatus("Conexión online perdida. Intentando reconectar…","bad");
-        if (!online.started) setOnlineStatus("No hay conexión con el servidor. Arranca Node y entra por http://localhost:3000","bad");
+        if (!online.started) setOnlineStatus(`No hay conexión con el servidor. Arranca Node y entra por ${appUrl()}`,"bad");
         if (!online.manualClose) scheduleReconnect();
       });
       socket.addEventListener("error",()=>{
-        if (!online.enabled) setOnlineStatus("No puedo conectar. Asegúrate de ejecutar `npm start` y abrir http://localhost:3000","bad");
+        if (online.socket!==socket) return;
+        if (!online.enabled) setOnlineStatus(`No puedo conectar. Asegúrate de ejecutar npm start y abrir ${appUrl()}`,"bad");
       });
     }
     function sendOnline(message) {
@@ -1152,6 +1474,7 @@
       const name=$("onlineName").value.trim()||"Jugador 1";
       safeStorageSet("ruletaPlayerName",name);
       online.token=getPlayerToken();
+      setOnlineStatus("Creando sala…", "good");
       connectOnline(()=>sendOnline({type:"create_room",name,token:online.token}));
     }
     function joinRoom() {
@@ -1194,33 +1517,75 @@
         if (typeof message.playerIndex==="number") online.playerIndex=message.playerIndex;
         if (typeof message.isHost==="boolean") online.isHost=message.isHost;
         updateOnlineLobby(message.players);
+        recoverTurnIfNeeded("room_update");
       }
       if (message.type==="snapshot") {
         online.started=true; applyOnlineSnapshot(message.state);
+      }
+      if (message.type==="left_room") {
+        resetOnlineRoom("Has salido de la sala.");
       }
       if (message.type==="error") { online.autoRejoining=false; setOnlineStatus(message.message,"bad"); }
       if (message.type==="peer_left") {
         online.players=message.players||online.players;
         if (!online.started) updateOnlineLobby(online.players);
-        else setStatus("El otro jugador se ha desconectado. La sala queda en pausa hasta que vuelva a entrar.","bad");
+        else if (!recoverTurnIfNeeded("peer_left")) setStatus("El otro jugador se ha desconectado. La sala queda en pausa hasta que vuelva a entrar.","bad");
       }
     }
     function updateOnlineLobby(players=online.players) {
       const present=players.filter(p=>p?.connected), ready=present.length>=2;
-      const names=players.map((p,i)=>p?.name||`Jugador ${i+1}`);
       const isHostPlayer=online.isHost===true;
       online.players=players;
       $("onlineStartBtn").classList.toggle("hidden",!(isHostPlayer && ready && !online.started));
+      $("onlineStartBtn").textContent=ready ? "Empezar partida" : "Esperando jugadores…";
       $("createRoomBtn").disabled=Boolean(online.roomCode);
       $("joinRoomBtn").disabled=Boolean(online.roomCode);
       renderLobby(players);
-      if (ready && !online.started && isHostPlayer) setOnlineStatus(`Sala ${roomCodeMarkup(online.roomCode)} lista: ${present.map(p=>p.name).join(" · ")}. Puedes empezar ya o esperar hasta 4.`, "good");
-      else if (ready && !online.started) setOnlineStatus(`Sala ${roomCodeMarkup(online.roomCode)} lista: ${present.map(p=>p.name).join(" · ")}. Esperando a que el anfitrión empiece.`, "good");
-      else if (online.enabled && !online.started) setOnlineStatus(`Sala ${roomCodeMarkup(online.roomCode)} · ${present.length}/4 jugadores. Mínimo 2 para empezar.`);
+      updateRoomTools();
+      if (ready && !online.started && isHostPlayer) setOnlineStatus("Listo para empezar. Puedes esperar hasta 4 jugadores.", "good");
+      else if (ready && !online.started) setOnlineStatus("Esperando a que el anfitrión empiece la partida.", "good");
+      else if (online.enabled && !online.started) setOnlineStatus(`${present.length}/4 jugadores conectados. Mínimo 2 para empezar.`);
     }
     function onlineCanAct() {
       if (!online.enabled) return true;
       return (state.playerSlots[state.active] ?? state.active) === online.playerIndex;
+    }
+    function activeSlotIndex() {
+      return state.playerSlots[state.active] ?? state.active;
+    }
+    function connectedPlayerIndexAfter(from=state.active) {
+      if (!state.players.length) return -1;
+      for (let step=1; step<=state.players.length; step++) {
+        const next=(from+step)%state.players.length;
+        const slot=state.playerSlots[next] ?? next;
+        if (online.players[slot]?.connected) return next;
+      }
+      return -1;
+    }
+    function recoverTurnIfNeeded(reason="") {
+      if (!online.enabled || !online.started || state.screen!=="game" || state.finished || !state.players.length) return false;
+      const activeSlot=activeSlotIndex();
+      if (online.players[activeSlot]?.connected) return false;
+      const next=connectedPlayerIndexAfter();
+      if (next<0 || next===state.active) return false;
+      state.active=next;
+      state.pendingWedge=null;
+      state.choiceMode="";
+      state.choosing=false;
+      state.charging=false;
+      state.spinning=false;
+      state.activity="";
+      state.charge=0;
+      updatePowerMeter(0);
+      $("choicePanel").classList.add("hidden");
+      $("keyboard").innerHTML="";
+      $("modalBackdrop").classList.add("hidden");
+      addHistory(`Turno recuperado para ${currentPlayer().name}`,"turn");
+      resetTurnTimer();
+      setStatus(`Turno recuperado para ${currentPlayer().name}.`,reason==="peer_left"?"bad":"spin-result");
+      render();
+      syncOnline("recover_turn");
+      return true;
     }
     function snapshotState() {
       return {
@@ -1254,7 +1619,35 @@
       $("modalBackdrop").classList.add("hidden");
       if (state.screen==="final") showFinal(false);
       else { showGameScreen(); render(); setStatus(state.statusText,state.statusType); renderHistory(); }
+      const restored=restorePendingActionAfterReconnect();
       online.applyingRemote=false;
+      if (restored) syncOnline("restore_turn");
+    }
+    function restorePendingActionAfterReconnect() {
+      if (!online.enabled || !onlineCanAct() || state.screen!=="game" || state.finished) return false;
+      if (state.choiceMode==="vowel") {
+        showChoices(VOWELS.filter(l=>!state.used.has(l)),"COMPRA UNA VOCAL · COSTE 50 €",chooseVowel,"vowel",{ sync:false });
+        setStatus(state.statusText||"Compra una vocal.","spin-result");
+        return true;
+      }
+      if (state.choiceMode==="consonant" && state.pendingWedge) {
+        showChoices(CONSONANTS.filter(l=>!state.used.has(l)),"ELIGE UNA CONSONANTE",chooseConsonant,"consonant",{ sync:false });
+        setStatus(state.statusText||`${state.pendingWedge.label}. Elige una consonante.`,"spin-result");
+        return true;
+      }
+      if (["charging","spinning"].includes(state.activity)) {
+        state.activity="";
+        resetTurnTimer();
+        setStatus(`Turno recuperado para ${currentPlayer().name}. Mantén pulsada la ruleta para girar.`,"spin-result");
+        render();
+        return true;
+      }
+      if (!state.timerDeadline) {
+        resetTurnTimer();
+        render();
+        return true;
+      }
+      return false;
     }
 
     function normalize(text) {
@@ -1279,7 +1672,7 @@
       const percent=Math.max(0,Math.min(100,(remaining/TURN_SECONDS)*100));
       fill.style.width=`${percent}%`;
       value.textContent=`${remaining}s`;
-      label.textContent=online.enabled && !onlineCanAct() ? "ESPERA" : "TURNO";
+      label.textContent=online.enabled && !onlineCanAct() ? "Espera" : "Turno";
       timer.classList.toggle("danger",remaining<=8 && state.timerDeadline>0);
       timer.classList.toggle("paused",!timerShouldRun());
     }
@@ -1317,6 +1710,7 @@
       return {
         charging: `${name} está cargando la ruleta`,
         spinning: `${name} está girando la ruleta`,
+        wedge: `${name} cayó en ${state.pendingWedge?.label || "un gajo"}`,
         choosing_letter: `${name} está eligiendo consonante`,
         buying_vowel: `${name} está comprando vocal`,
         solving: `${name} está intentando resolver`
@@ -1445,11 +1839,12 @@
     }
 
     function render() {
+      $("gameScreen").classList.toggle("is-choosing",state.choosing);
       $("roomLabel").classList.toggle("hidden",!online.enabled);
       $("roomLabel").textContent=online.enabled?`SALA ${online.roomCode} · J${(online.playerIndex??0)+1}`:"";
-      $("roundLabel").textContent=state.round===JACKPOT_ROUND?"PANEL CON BOTE 🎯":`PANEL ${state.round+1} DE ${TOTAL_ROUNDS}`;
-      $("category").textContent=currentPanel().categoria.toUpperCase();
-      $("difficulty").textContent=`DIFICULTAD ${currentPanel().dificultad.toUpperCase()}`;
+      $("roundLabel").textContent=state.round===JACKPOT_ROUND?"Panel con bote 🎯":`Panel ${state.round+1}/${TOTAL_ROUNDS}`;
+      $("category").textContent=currentPanel().categoria;
+      $("difficulty").textContent=currentPanel().dificultad;
       $("clue").textContent=currentPanel().clue;
       $("jackpot").classList.remove("hidden"); $("jackpot").classList.toggle("compact",state.round!==JACKPOT_ROUND);
       $("jackpot").classList.toggle("claimed",state.jackpotClaimed);
@@ -1475,7 +1870,7 @@
       $("wheel").setAttribute("aria-disabled",String(locked || hiddenLetters(CONSONANTS).length===0));
       document.querySelector(".wheel-zone").classList.toggle("disabled",state.spinning||state.choosing||state.finished||hiddenLetters(CONSONANTS).length===0);
       document.querySelector(".wheel-zone").classList.toggle("disabled",locked||hiddenLetters(CONSONANTS).length===0);
-      $("spinHint").textContent=notMyTurn?`ESPERANDO A ${currentPlayer().name.toUpperCase()}`:(!hiddenLetters(CONSONANTS).length?"NO QUEDAN CONSONANTES: COMPRA VOCAL O RESUELVE":(state.spinning?"LA RULETA ESTÁ GIRANDO…":state.charging?"SUELTA PARA GIRAR":"MANTÉN PULSADA LA RULETA PARA CARGAR"));
+      $("spinHint").textContent=notMyTurn?`Esperando a ${currentPlayer().name}`:(!hiddenLetters(CONSONANTS).length?"No quedan consonantes: compra vocal o resuelve":(state.spinning?"La ruleta está girando…":state.charging?"Suelta para girar":"Mantén pulsada la ruleta para cargar"));
       $("remoteBanner").classList.toggle("hidden",!(online.enabled && notMyTurn && !state.finished));
       $("remoteBanner").textContent=activityText();
       $("vowelBtn").disabled=locked || currentPlayer().roundMoney<50 || hiddenLetters(VOWELS).length===0;
@@ -1507,7 +1902,7 @@
       const el=$("status"); el.textContent=text; el.className=`status ${type}`.trim();
     }
     function hideChoices() { state.choosing=false; state.choiceMode=""; state.activity=""; $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML=""; }
-    function showChoices(letters,title,handler,kind="") {
+    function showChoices(letters,title,handler,kind="",options={}) {
       state.choosing=true; state.choiceMode=kind||"consonant"; state.activity=kind==="vowel"?"buying_vowel":"choosing_letter"; $("choiceTitle").textContent=title; const keys=$("keyboard"); keys.innerHTML="";
       resetTurnTimer();
       letters.forEach(letter => {
@@ -1526,6 +1921,7 @@
         keys.appendChild(b);
       });
       $("choicePanel").classList.remove("hidden"); render();
+      if (options.sync!==false) syncOnline(kind==="vowel"?"choose_vowel":"choose_consonant");
     }
 
     // Giro por carga: mantener pulsado aumenta la fuerza y soltar inicia la inercia.
@@ -1581,10 +1977,10 @@
       setStatus("Carga cancelada. Mantén pulsada la ruleta para intentarlo de nuevo."); render(); syncOnline("charge_cancel");
     }
     function stopWheel() {
-      state.spinning=false; state.velocity=0; state.activity="";
+      state.spinning=false; state.velocity=0;
       const normalized=((state.currentRotation%360)+360)%360;
       const winner=Math.floor(normalized/(360/WEDGES.length))%WEDGES.length;
-      state.pendingWedge=state.activeWedges[winner]; highlightWedge(winner); resolveWedge(state.pendingWedge);
+      state.pendingWedge=state.activeWedges[winner]; state.activity="wedge"; highlightWedge(winner); resolveWedge(state.pendingWedge);
     }
     function highlightWedge(index) {
       document.querySelectorAll("#wheel path").forEach(p=>p.style.filter="");
@@ -1611,7 +2007,6 @@
       const labels={ money:`${w.value} €`, wildcard:`COMODÍN + ${w.value} €`, x2:"X2", half:"½" };
       setStatus(`${labels[w.type]}. Elige una consonante.`,"spin-result");
       showChoices(CONSONANTS.filter(l=>!state.used.has(l)),"ELIGE UNA CONSONANTE",chooseConsonant);
-      syncOnline("wedge");
     }
     function chooseConsonant(letter) {
       hideChoices(); state.used.add(letter); const count=occurrences(letter), w=state.pendingWedge, p=currentPlayer();
@@ -1670,6 +2065,18 @@
       }
     }
 
+    function openExitConfirm() {
+      if (state.screen!=="game") return;
+      stopTurnTimer();
+      const detail=online.enabled
+        ? "Abandonarás la sala y volverás a la pantalla inicial. Los demás jugadores verán que te has desconectado."
+        : "La partida local actual se perderá y volverás a la pantalla inicial.";
+      $("modal").innerHTML=`<div class="modal-icon">⚠️</div><h2>¿Salir de la partida?</h2><p>${detail}</p><div class="modal-actions"><button id="cancelExitGame" class="modal-btn alt" type="button">Cancelar</button><button id="confirmExitGame" class="modal-btn danger" type="button">Salir</button></div>`;
+      $("modalBackdrop").classList.remove("hidden");
+      $("cancelExitGame").onclick=()=>{ $("modalBackdrop").classList.add("hidden"); if (state.screen==="game" && !state.finished) resetTurnTimer(); };
+      $("confirmExitGame").onclick=leaveCurrentGame;
+    }
+
     function offerWildcard(reason) {
       if (!currentPlayer().wildcard) { setTimeout(switchTurn,700); return; }
       state.choosing=true; render();
@@ -1724,7 +2131,7 @@
     }
     function toggleLocalSetup() {
       $("localSetup").classList.toggle("hidden");
-      $("showLocalBtn").textContent=$("localSetup").classList.contains("hidden")?"JUGAR PARTIDA LOCAL":"OCULTAR PARTIDA LOCAL";
+      $("showLocalBtn").textContent=$("localSetup").classList.contains("hidden")?"Jugar en este dispositivo":"Ocultar partida local";
     }
     function initSharedRoom() {
       const params=new URLSearchParams(location.search), code=(params.get("sala")||params.get("room")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
@@ -1756,16 +2163,20 @@
     initSharedRoom();
     $("startForm").addEventListener("submit",startGame);
     $("showLocalBtn").addEventListener("click",toggleLocalSetup);
-    $("createRoomBtn").addEventListener("click",createRoom);
     $("joinRoomBtn").addEventListener("click",joinRoom);
     $("onlineStartBtn").addEventListener("click",startOnlineMatch);
     $("copyCodeBtn").addEventListener("click",copyRoomCode);
     $("copyLinkBtn").addEventListener("click",copyRoomLink);
+    $("exitGameBtn").addEventListener("click",openExitConfirm);
     $("roomCodeInput").addEventListener("input",event=>{ event.target.value=event.target.value.toUpperCase().replace(/[^A-Z0-9]/g,""); });
     $("soundBtn").addEventListener("click",toggleSound);
     $("wheel").addEventListener("pointerdown",startCharge);
     $("wheel").addEventListener("pointerup",endCharge);
     $("wheel").addEventListener("pointercancel",cancelCharge);
+    ["selectstart","contextmenu","dragstart"].forEach(eventName=>{
+      $("wheel").addEventListener(eventName,event=>event.preventDefault());
+      document.querySelector(".wheel-zone").addEventListener(eventName,event=>event.preventDefault());
+    });
     $("vowelBtn").addEventListener("click",buyVowel);
     $("solveBtn").addEventListener("click",openSolve);
     $("restartBtn").addEventListener("click",restart);
