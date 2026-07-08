@@ -37,6 +37,69 @@ export function createOnlineController(ctx) {
     document.querySelector(".online-card")?.classList.toggle("room-active",Boolean(online.roomCode));
     $("startScreen").classList.toggle("is-lobby-active",Boolean(online.roomCode));
   }
+  function setInviteMode(code="") {
+    const active=Boolean(code);
+    $("startScreen").classList.toggle("is-home-mode",!active);
+    $("startScreen").classList.toggle("is-invite-mode",active);
+    $("startScreen").classList.remove("is-manual-code-mode","is-local-mode");
+    document.querySelector(".online-card")?.classList.toggle("invite-mode",active);
+    document.querySelector(".create-room-card")?.classList.toggle("hidden",active);
+    const kicker=document.querySelector(".online-card .section-kicker");
+    const copy=document.querySelector(".online-card .section-copy");
+    const joinTitle=document.querySelector(".join-room-card h3");
+    const joinCopy=document.querySelector(".join-room-card p");
+    const inviteCode=$("inviteCodeBadge");
+    const joinButton=$("joinRoomBtn");
+    if (kicker) kicker.textContent=active ? "Invitación recibida" : "Jugar online";
+    if (copy) copy.textContent=active ? "Escribe tu nombre para unirte." : "Crea una sala y juega con amigos desde casa.";
+    if (joinTitle) joinTitle.textContent=active ? "Entrar en la sala" : "Entrar con código";
+    if (joinCopy) joinCopy.textContent=active ? "Tu código ya está preparado." : "Introduce el código que te han pasado.";
+    if (inviteCode) inviteCode.textContent=active ? `Sala ${code}` : "Sala";
+    if (joinButton) joinButton.textContent=active ? "Entrar en la sala" : "Entrar";
+  }
+  function showManualCodeMode() {
+    $("startScreen").classList.add("is-home-mode","is-manual-code-mode");
+    $("startScreen").classList.remove("is-invite-mode","is-local-mode");
+    document.querySelector(".online-card")?.classList.remove("invite-mode");
+    document.querySelector(".create-room-card")?.classList.remove("hidden");
+    const kicker=document.querySelector(".online-card .section-kicker");
+    const copy=document.querySelector(".online-card .section-copy");
+    const joinTitle=document.querySelector(".join-room-card h3");
+    const joinCopy=document.querySelector(".join-room-card p");
+    if (kicker) kicker.textContent="Entrar manualmente";
+    if (copy) copy.textContent="Introduce el código que te han pasado.";
+    if (joinTitle) joinTitle.textContent="Entrar con código";
+    if (joinCopy) joinCopy.textContent="Introduce el código que te han pasado.";
+    $("backToHomeBtn").textContent="Volver a crear sala";
+    $("joinRoomBtn").textContent="Entrar";
+    setOnlineStatus("");
+  }
+  function showInviteManualCodeMode() {
+    $("startScreen").classList.add("is-invite-mode","is-manual-code-mode");
+    $("startScreen").classList.remove("is-home-mode","is-local-mode");
+    document.querySelector(".online-card")?.classList.add("invite-mode");
+    document.querySelector(".create-room-card")?.classList.add("hidden");
+    const kicker=document.querySelector(".online-card .section-kicker");
+    const copy=document.querySelector(".online-card .section-copy");
+    const joinTitle=document.querySelector(".join-room-card h3");
+    const joinCopy=document.querySelector(".join-room-card p");
+    if (kicker) kicker.textContent="Cambiar código";
+    if (copy) copy.textContent="Introduce otro código de sala.";
+    if (joinTitle) joinTitle.textContent="Entrar con otro código";
+    if (joinCopy) joinCopy.textContent="Introduce el código que te han pasado.";
+    $("backToHomeBtn").textContent="Volver al inicio";
+    $("joinRoomBtn").textContent="Entrar";
+    setOnlineStatus("");
+  }
+  function resetInviteMode() {
+    const url=new URL(location.href);
+    url.searchParams.delete("sala");
+    url.searchParams.delete("room");
+    history.replaceState(null,"",url.pathname + url.search + url.hash);
+    $("roomCodeInput").value="";
+    setInviteMode("");
+    setOnlineStatus("");
+  }
   function restoreOnlineControls() {
     const card=document.querySelector(".online-card"), actions=document.querySelector(".online-actions");
     if (!card || !actions) return;
@@ -272,6 +335,9 @@ export function createOnlineController(ctx) {
     if (message.type==="snapshot") {
       online.started=true; applyOnlineSnapshot(message.state);
     }
+    if (message.type==="realtime_event") {
+      applyRealtimeEvent(message.event, message.senderIndex);
+    }
     if (message.type==="left_room") {
       resetOnlineRoom("Has salido de la sala.");
     }
@@ -347,12 +413,94 @@ export function createOnlineController(ctx) {
       jackpotClaimedAmount: state.jackpotClaimedAmount, choiceMode: state.choiceMode,
       statusText: state.statusText, statusType: state.statusType, screen: state.screen,
       history: state.history, timerDeadline: state.timerDeadline, timerRemaining: state.timerRemaining,
-      activity: state.activity
+      activity: state.activity, solveDraft: state.solveDraft
     };
+  }
+  function sendOnlineEvent(type,payload={}) {
+    if (!online.enabled || online.applyingRemote || !online.roomCode) return;
+    sendOnline({type:"realtime_event",code:online.roomCode,event:{type,...payload}});
   }
   function syncOnline(reason="state") {
     if (!online.enabled || online.applyingRemote) return;
     sendOnline({type:"snapshot",code:online.roomCode,reason,state:snapshotState()});
+  }
+  function applyRealtimeEvent(event={},senderIndex=-1) {
+    if (!online.enabled || !online.started || state.screen!=="game" || state.finished) return;
+    if (typeof senderIndex==="number" && senderIndex!==activeSlotIndex()) return;
+    if (onlineCanAct()) return;
+    if (event.type==="wheel_charge") {
+      state.activity="charging"; state.charging=true; state.spinning=false;
+      $("wheel").classList.add("charging");
+      updatePowerMeter(Math.max(0,Math.min(100,Number(event.charge)||0)));
+      setStatus(`${currentPlayer().name} está cargando la ruleta`,"spin-result");
+      render();
+      return;
+    }
+    if (event.type==="wheel_charge_cancel") {
+      state.activity=""; state.charging=false; state.spinning=false;
+      $("wheel").classList.remove("charging");
+      updatePowerMeter(0);
+      setStatus(`Turno de ${currentPlayer().name}`);
+      render();
+      return;
+    }
+    if (event.type==="wheel_spin_start") {
+      state.activity="spinning"; state.charging=false; state.spinning=true;
+      $("wheel").classList.remove("charging");
+      updatePowerMeter(0);
+      if (Number.isFinite(event.rotation)) {
+        state.currentRotation=event.rotation;
+        $("wheel").style.transform=`rotate(${state.currentRotation}deg)`;
+      }
+      setStatus(`${currentPlayer().name} está girando la ruleta`,"spin-result");
+      render();
+      return;
+    }
+    if (event.type==="wheel_rotation") {
+      if (!Number.isFinite(event.rotation)) return;
+      if (!state.spinning) {
+        state.activity="spinning"; state.spinning=true; state.charging=false;
+        setStatus(`${currentPlayer().name} está girando la ruleta`,"spin-result");
+        render();
+      }
+      state.currentRotation=event.rotation;
+      $("wheel").style.transform=`rotate(${state.currentRotation}deg)`;
+      return;
+    }
+    if (event.type==="wheel_spin_end") {
+      if (Number.isFinite(event.rotation)) {
+        state.currentRotation=event.rotation;
+        $("wheel").style.transform=`rotate(${state.currentRotation}deg)`;
+      }
+      state.spinning=false;
+      return;
+    }
+    if (event.type==="solve_draft") {
+      const draft=String(event.draft||"").toUpperCase().replace(/\s+/g," ").slice(0,80);
+      state.activity="solving"; state.solveDraft=draft; state.charging=false; state.spinning=false;
+      stopTurnTimer();
+      setStatus(draft ? `${currentPlayer().name} escribe: ${draft}` : `${currentPlayer().name} está intentando resolver`,"spin-result");
+      render();
+      return;
+    }
+    if (event.type==="solve_result") {
+      const attempt=String(event.attempt||"sin respuesta").trim().replace(/\s+/g," ").slice(0,120);
+      const correct=Boolean(event.correct);
+      state.activity="solving";
+      state.solveDraft=attempt;
+      state.charging=false;
+      state.spinning=false;
+      stopTurnTimer();
+      setStatus(correct
+        ? `${currentPlayer().name} responde "${attempt}" y acierta.`
+        : `${currentPlayer().name} responde "${attempt}" y falla.`,
+        correct ? "good" : "bad");
+      addHistory(correct
+        ? `${currentPlayer().name} respondió "${attempt}" y acertó`
+        : `${currentPlayer().name} respondió "${attempt}" y falló`,
+        correct ? "solve" : "bad");
+      render();
+    }
   }
   function applyOnlineSnapshot(snapshot) {
     online.applyingRemote=true;
@@ -362,7 +510,7 @@ export function createOnlineController(ctx) {
     state.jackpotClaimed=Boolean(snapshot.jackpotClaimed); state.jackpotWinner=snapshot.jackpotWinner||""; state.jackpotClaimedAmount=snapshot.jackpotClaimedAmount||0;
     state.choiceMode=snapshot.choiceMode||""; state.statusText=snapshot.statusText||""; state.statusType=snapshot.statusType||""; state.screen=snapshot.screen||"game";
     state.history=snapshot.history||[];
-    state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||TURN_SECONDS; state.activity=snapshot.activity||"";
+    state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||TURN_SECONDS; state.activity=snapshot.activity||""; state.solveDraft=snapshot.solveDraft||"";
     state.spinning=false; state.charging=false; state.choosing=false; state.charge=0; updatePowerMeter(0); $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML="";
     ensureTimerLoop(); updateTimerDisplay();
     $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
@@ -406,6 +554,7 @@ export function createOnlineController(ctx) {
     const rememberedToken=rememberedPlayerToken();
     const rememberedName=safeStorageGet("ruletaPlayerName");
     if (rememberedName) $("onlineName").value=rememberedName;
+    setInviteMode(code);
     const target=code||remembered;
     if (!target) return;
     $("roomCodeInput").value=target;
@@ -429,6 +578,6 @@ export function createOnlineController(ctx) {
   return {
     copyRoomCode, copyRoomLink, createRoom, initSharedRoom, joinRoom,
     leaveCurrentGame, leaveRoom, onlineCanAct, resumeOnlineConnection,
-    setOnlineStatus, syncOnline
+    resetInviteMode, setOnlineStatus, showInviteManualCodeMode, showManualCodeMode, syncOnline, sendOnlineEvent
   };
 }

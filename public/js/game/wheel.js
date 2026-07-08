@@ -11,14 +11,14 @@ function arcPath(start, end) {
   return `M150 150 L${a.x} ${a.y} A144 144 0 0 0 ${b.x} ${b.y} Z`;
 }
 
-const MONEY_COLORS = ["#2658f6", "#0cae85", "#ffc247", "#5a42e8", "#1483d8", "#e95778"];
+const MONEY_COLORS = ["#1c4dff", "#08a98d", "#f29a19", "#6a45f5", "#1478d8", "#e64264"];
 const SPECIAL_COLORS = {
   bankrupt: { fill: "#16213f", text: "#ffffff", stroke: "rgba(7,16,45,.5)" },
   lose: { fill: "#f8fbff", text: "#18264f", stroke: "rgba(24,38,79,.2)" },
   x2: { fill: "#7d3cff", text: "#ffffff", stroke: "rgba(53,20,120,.42)" },
-  wildcard: { fill: "#5a42e8", text: "#fff4c7", stroke: "rgba(35,26,116,.42)" },
+  wildcard: { fill: "#5a42e8", text: "#fff4c7", stroke: "rgba(35,26,116,.48)" },
   half: { fill: "#e64264", text: "#ffffff", stroke: "rgba(127,13,44,.36)" },
-  jackpot: { fill: "#ffc247", text: "#342100", stroke: "rgba(255,255,255,.68)" }
+  jackpot: { fill: "#ffc247", text: "#342100", stroke: "rgba(255,255,255,.7)" }
 };
 
 function getWheelDisplay(wedge, index) {
@@ -35,7 +35,7 @@ function getWheelDisplay(wedge, index) {
     };
   }
   const fill = MONEY_COLORS[index % MONEY_COLORS.length];
-  const warmText = fill === "#ffc247" || fill === "#0cae85";
+  const warmText = fill === "#f29a19" || fill === "#08a98d";
   return {
     label: wedge.label,
     lines: [wedge.label],

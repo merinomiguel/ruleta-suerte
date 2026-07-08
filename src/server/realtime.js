@@ -165,6 +165,25 @@ function saveSnapshot(socket, message) {
   broadcast(room, { type: "snapshot", code, state: room.state, reason: message.reason || "state" }, socket);
 }
 
+function broadcastRealtimeEvent(socket, message) {
+  const code = String(message.code || "").toUpperCase();
+  const room = rooms.get(code);
+  const senderIndex = room ? room.players.findIndex(player => player?.socket === socket) : -1;
+
+  if (!room || senderIndex === -1) {
+    send(socket, { type: "error", message: "No estás dentro de esa sala." });
+    return;
+  }
+
+  room.lastActivity = Date.now();
+  broadcast(room, {
+    type: "realtime_event",
+    code,
+    senderIndex,
+    event: message.event || {}
+  }, socket);
+}
+
 function handleMessage(socket, raw) {
   let message;
   try {
@@ -183,6 +202,7 @@ function handleMessage(socket, raw) {
   if (message.type === "join_room") joinRoom(socket, message);
   if (message.type === "leave_room") leaveRoom(socket, message);
   if (message.type === "snapshot") saveSnapshot(socket, message);
+  if (message.type === "realtime_event") broadcastRealtimeEvent(socket, message);
 }
 
 function handleClose(socket) {

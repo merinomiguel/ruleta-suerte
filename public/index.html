@@ -9,7 +9,7 @@
   <meta name="color-scheme" content="light">
   <title>La Ruleta de la Suerte</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f7cff'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23ffd166'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2354f0c2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/css/styles.css?v=visual-9-1">
+  <link rel="stylesheet" href="/css/styles.css?v=polish-pass-3">
 </head>
 <body>
   <main>
@@ -18,17 +18,26 @@
         <header class="start-hero">
           <p class="eyebrow">El concurso en casa</p>
           <h1>LA RULETA <span>DE LA SUERTE</span></h1>
-          <p class="tagline">Crea una sala, comparte el código y juega desde casa.</p>
+          <p class="tagline">Crea una sala y juega con amigos desde casa.</p>
         </header>
         <div class="start-card">
-          <div class="identity-card">
-            <label>Tu nombre<input id="onlineName" maxlength="16" value="Jugador" autocomplete="off"></label>
-          </div>
-
           <div class="online-card">
             <div class="section-heading">
               <p class="section-kicker">Jugar online</p>
-              <p class="section-copy">Crea una sala o entra con un código.</p>
+              <p class="section-copy">Crea una sala y juega con amigos desde casa.</p>
+            </div>
+            <div class="invite-panel" aria-live="polite">
+              <p class="section-kicker">Invitación recibida</p>
+              <h2>Te han invitado a una sala</h2>
+              <p>Escribe tu nombre para unirte.</p>
+              <div id="inviteCodeBadge" class="invite-code-badge">Sala</div>
+              <div class="invite-options">
+                <button id="changeCodeBtn" class="text-link-btn" type="button">Usar otro código</button>
+                <button id="resetInviteBtn" class="text-link-btn" type="button">Volver al inicio</button>
+              </div>
+            </div>
+            <div class="identity-card">
+              <label>Tu nombre<input id="onlineName" maxlength="16" value="Jugador" autocomplete="off"></label>
             </div>
             <div id="lobbyPanel" class="lobby-panel hidden" aria-label="Jugadores en la sala"></div>
             <div id="onlineTools" class="online-tools hidden">
@@ -49,7 +58,7 @@
               <article class="online-action-card join-room-card">
                 <div>
                   <h3>Entrar con código</h3>
-                  <p>Únete a una sala creada.</p>
+                  <p>Introduce el código que te han pasado.</p>
                 </div>
                 <div class="online-row">
                   <label>Código<input id="roomCodeInput" class="room-code-input" maxlength="6" placeholder="ABCD" autocomplete="off"></label>
@@ -57,6 +66,8 @@
                 </div>
               </article>
             </div>
+            <button id="showCodeEntryBtn" class="text-link-btn manual-code-toggle" type="button">Tengo un código de sala</button>
+            <button id="backToHomeBtn" class="text-link-btn manual-code-back" type="button">Volver a crear sala</button>
           </div>
 
           <div class="mode-divider">Alternativa</div>
@@ -138,8 +149,8 @@
               <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
               <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
             </div>
-            <div id="wheelResult" class="wheel-result" aria-live="polite">Ruleta lista</div>
-            <div id="spinHint" class="spin-hint">Mantén pulsada la ruleta para girar</div>
+            <div id="wheelResult" class="wheel-result" aria-live="polite">Lista para girar</div>
+            <div id="spinHint" class="spin-hint">Mantén y suelta para girar</div>
             <div class="power-meter" aria-label="Fuerza del giro">
               <div class="power-label"><span>Fuerza</span><span id="powerValue">Mantén pulsado</span></div>
               <div id="forceBar" class="power-track"><div id="forceFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
@@ -173,6 +184,6 @@
   <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
 
-  <script type="module" src="/js/game/app.js?v=visual-9-1"></script>
+  <script type="module" src="/js/game/app.js?v=live-actions-1"></script>
 </body>
 </html>
