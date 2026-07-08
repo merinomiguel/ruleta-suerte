@@ -73,15 +73,14 @@
 .modal-backdrop {
   position: fixed;
   z-index: 20;
-  top: var(--visible-viewport-top, 0px);
-  left: 0;
-  right: 0;
-  height: var(--visible-viewport-height, 100dvh);
-  display: grid;
-  place-items: center;
+  inset: 0;
+  min-height: var(--visible-viewport-height, 100dvh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 16px max(18px, calc(env(safe-area-inset-bottom) + 12px));
-  background: rgba(16,26,61,.5);
-  backdrop-filter: blur(16px);
+  background: rgba(16,26,61,.58);
+  backdrop-filter: blur(16px) saturate(1.04);
   overflow: auto;
 }
 .modal {
@@ -108,7 +107,8 @@
   width: min(720px, 100%);
 }
 body.keyboard-visible .modal-backdrop {
-  place-items: start center;
+  align-items: flex-start;
+  padding-top: max(14px, calc(env(safe-area-inset-top) + 10px));
 }
 body.keyboard-visible .solve-modal {
   max-height: calc(var(--visible-viewport-height, 100dvh) - max(16px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom) + 14px)));

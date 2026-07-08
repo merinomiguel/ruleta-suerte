@@ -3,12 +3,12 @@
 import { CONSONANTS, JACKPOT_ROUND, LETTERS, MAX_PLAYERS, SHORT_TURN_SECONDS, TOTAL_ROUNDS, TURN_SECONDS, VOWELS, WEDGES } from "./config.js?v=mobile-ux-1";
 import { $ } from "./dom.js";
 import { ensureAudio, sfx, toggleSound, unlockAudio } from "./audio.js?v=mobile-ux-1";
-import { createEffects } from "./effects.js";
+import { createEffects } from "./effects.js?v=mobile-perf-1";
 import { normalize, money } from "./format.js";
 import { createHistory } from "./history.js";
 import { selectProgressivePanels } from "./panels.js?v=board-resolve-1";
 import { createOnlineController } from "./online.js?v=mobile-ux-1";
-import { createWheel } from "./wheel.js?v=mobile-ux-1";
+import { createWheel } from "./wheel.js?v=mobile-perf-1";
 
 const state = {
   players: [], panels: [], round: 0, active: 0, used: new Set(),
@@ -20,11 +20,15 @@ const state = {
   playerSlots: [], history: [],
   timerDeadline: 0, timerRemaining: TURN_SECONDS, timerFrame: 0, activity: "",
   solveDraft: "", turnAwaitingAck: false, turnSeconds: TURN_SECONDS, shortRound: false,
+  turnId: 0, turnAcceptedAt: 0, turnAcceptedBy: -1, turnPhase: "idle",
   lastWarningSecond: 0, speechRecognition: null
 };
 const { animateElement, bumpJackpot, celebrate } = createEffects($);
 const { addHistory, renderHistory } = createHistory($, state);
 const { buildWheel, highlightWedge } = createWheel($, state);
+let lastNotifiedTurnKey = "";
+let activeTurnModalKey = "";
+let pendingTurnNotification = false;
 
 const online = {
   enabled: false, connected: false, socket: null, roomCode: "", playerIndex: null,
@@ -37,6 +41,50 @@ function currentPanel() { return state.panels[state.round]; }
 function currentPlayer() { return state.players[state.active]; }
 function nextPlayerIndex(from=state.active) { return (from + 1) % state.players.length; }
 function scoreboardLine() { return state.players.map(p=>`${p.name} ${money(p.total)}`).join(" · "); }
+function currentTurnKey() {
+  return `${state.round}:${state.turnId || 0}:${state.active}:${state.playerSlots[state.active] ?? state.active}`;
+}
+function canUseTurnAction() {
+  return state.screen==="game" && state.players.length && !state.finished && onlineCanAct() && !state.turnAwaitingAck;
+}
+function blockedTurnMessage() {
+  if (!onlineCanAct()) return "Espera tu turno.";
+  if (state.turnAwaitingAck) return "Pulsa Empezar turno para jugar.";
+  return "";
+}
+function rejectBlockedTurnAction() {
+  const message=blockedTurnMessage();
+  if (message) setStatus(message,"spin-result");
+  return false;
+}
+function playTurnNotification() {
+  try {
+    const ctx=ensureAudio();
+    if (ctx?.state === "running") sfx("turn");
+    else pendingTurnNotification=true;
+  } catch (error) {
+    pendingTurnNotification=true;
+    console.warn("Turn sound blocked by browser", error);
+  }
+  try { navigator.vibrate?.([80, 40, 80]); } catch (_) {}
+}
+function flushPendingTurnNotification() {
+  if (!pendingTurnNotification) return;
+  pendingTurnNotification=false;
+  try {
+    unlockAudio();
+    sfx("turn");
+  } catch (error) {
+    pendingTurnNotification=true;
+    console.warn("Turn sound blocked by browser", error);
+  }
+}
+function notifyTurnIfNeeded() {
+  const key=currentTurnKey();
+  if (lastNotifiedTurnKey === key) return;
+  lastNotifiedTurnKey=key;
+  playTurnNotification();
+}
 function timerShouldRun() {
   return state.screen==="game" && state.players.length && !state.finished && !state.spinning && !state.charging && state.activity!=="solving" && !state.turnAwaitingAck && state.timerDeadline>0;
 }
@@ -44,14 +92,14 @@ function updateTimerDisplay() {
   const timer=$("turnTimer"), fill=$("timerFill"), value=$("timerValue"), label=$("timerLabel");
   if (!timer || !fill || !value || !label) return;
   if (!state.players.length || state.screen!=="game" || state.finished) {
-    timer.classList.add("paused"); fill.style.width="0%"; value.textContent="—"; label.textContent="TURNO"; return;
+    timer.classList.add("paused"); fill.style.width="0%"; value.textContent="—"; label.textContent="TIEMPO"; return;
   }
   const remaining=state.timerDeadline ? Math.max(0,Math.ceil((state.timerDeadline-Date.now())/1000)) : state.timerRemaining;
   state.timerRemaining=remaining;
   const percent=Math.max(0,Math.min(100,(remaining/state.turnSeconds)*100));
   fill.style.width=`${percent}%`;
   value.textContent=`${remaining}s`;
-  label.textContent=state.turnAwaitingAck ? "Listo" : (state.activity==="solving" ? "Pausa" : (online.enabled && !onlineCanAct() ? "Espera" : "Turno"));
+  label.textContent=getTurnStatusUI().timerLabel;
   timer.classList.toggle("danger",remaining<=8 && state.timerDeadline>0);
   timer.classList.toggle("paused",!timerShouldRun());
   if (timerShouldRun() && onlineCanAct() && remaining<=5 && remaining>0 && state.lastWarningSecond!==remaining) {
@@ -88,18 +136,7 @@ function handleTurnTimeout() {
   state.choosing=false; state.activity="";
   addHistory(`${currentPlayer().name} agotó el tiempo`,"bad");
   sfx("bad");
-  switchTurn(`Tiempo agotado. Turno de ${state.players[nextPlayerIndex()].name}.`);
-}
-function activityText() {
-  const name=currentPlayer()?.name || "el otro jugador";
-  return {
-    charging: `${name} está cargando la ruleta`,
-    spinning: `${name} está girando la ruleta`,
-    wedge: `${name} cayó en ${state.pendingWedge?.label || "un gajo"}`,
-    choosing_letter: `${name} está eligiendo consonante`,
-    buying_vowel: `${name} está comprando vocal`,
-    solving: state.solveDraft ? `${name} escribe: ${state.solveDraft}` : `${name} está intentando resolver`
-  }[state.activity] || `Turno de ${name}`;
+  switchTurn("Tiempo agotado.");
 }
 function resetViewportPosition() {
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -175,23 +212,113 @@ function wheelActionLabel(wedge) {
   if (wedge.type === "jackpot") return "Ganas el bote";
   return "Elige una consonante";
 }
-function renderWheelResult() {
+function statusIsTurnOnly(text=state.statusText) {
+  return /^(turno de|empieza|turno recuperado)/i.test(String(text || "").trim());
+}
+function statusFeedbackText() {
+  const text=String(state.statusText || "").trim();
+  if (!text || statusIsTurnOnly(text)) return "";
+  if (state.choosing || ["choosing_letter","buying_vowel"].includes(state.activity)) return "";
+  return text;
+}
+function getTurnStatusUI(options={}) {
+  const player=currentPlayer();
+  const playerName=player?.name || "Jugador";
+  const notMyTurn=state.players.length ? !onlineCanAct() : false;
+  const canChooseConsonant=options.canChooseConsonant ?? (availableConsonants().length>0 && hiddenConsonants().length>0);
+  const feedback=statusFeedbackText();
+  const turnText=`Turno de ${playerName}`;
+  const waitingText="Esperando a que juegue";
+  const ui={
+    primaryText: feedback || turnText,
+    primaryType: feedback ? state.statusType : "",
+    secondaryText: "",
+    wheelButtonText: "Lista para girar",
+    wheelType: "",
+    spinHintText: "",
+    timerLabel: "Tiempo",
+    hasFeedback: Boolean(feedback)
+  };
+
+  if (!state.players.length) return ui;
+  if (state.finished) {
+    ui.primaryText=feedback || "Panel terminado";
+    ui.wheelButtonText="Panel terminado";
+    return ui;
+  }
+  if (state.turnAwaitingAck) {
+    ui.primaryText=notMyTurn ? turnText : (feedback || turnText);
+    ui.primaryType=notMyTurn ? "" : ui.primaryType;
+    ui.secondaryText=notMyTurn ? waitingText : (feedback ? turnText : "");
+    ui.wheelButtonText=notMyTurn ? "Esperando" : "Confirma tu turno";
+    ui.spinHintText=notMyTurn ? "" : "Confirma el turno para empezar";
+    ui.timerLabel=notMyTurn ? "Tiempo" : "Listo";
+    return ui;
+  }
+  if (state.choosing || state.activity==="choosing_letter" || state.activity==="buying_vowel") {
+    ui.primaryText=state.choiceMode==="vowel" || state.activity==="buying_vowel" ? "Elige una letra" : "Di una consonante";
+    ui.primaryType="spin-result";
+    ui.wheelButtonText=ui.primaryText;
+    return ui;
+  }
+  if (state.activity==="solving") {
+    ui.primaryText=feedback || (notMyTurn ? `${playerName} está intentando resolver` : "Resolver panel");
+    ui.secondaryText=notMyTurn ? waitingText : "";
+    ui.wheelButtonText="Pausa";
+    ui.timerLabel="Pausa";
+    return ui;
+  }
+  if (state.spinning || state.activity==="spinning") {
+    ui.primaryText=feedback || (notMyTurn ? `${playerName} está girando la ruleta` : "Girando la ruleta");
+    ui.secondaryText=notMyTurn ? waitingText : "";
+    ui.wheelButtonText="Girando";
+    ui.wheelType="spinning";
+    ui.spinHintText="Buscando gajo ganador";
+    return ui;
+  }
+  if (state.charging || state.activity==="charging") {
+    ui.primaryText=feedback || (notMyTurn ? `${playerName} está cargando la ruleta` : "Cargando fuerza");
+    ui.secondaryText=notMyTurn ? waitingText : "";
+    ui.wheelButtonText=notMyTurn ? "Esperando" : "Suelta para lanzar";
+    ui.wheelType="charging";
+    ui.spinHintText=notMyTurn ? "" : "Cargando giro";
+    return ui;
+  }
+  if (notMyTurn) {
+    ui.primaryText=turnText;
+    ui.primaryType="";
+    ui.secondaryText=waitingText;
+    ui.wheelButtonText="Esperando";
+    return ui;
+  }
+  if (state.pendingWedge) {
+    ui.wheelButtonText=`Ha salido: ${wheelDisplayLabel(state.pendingWedge)}`;
+    ui.wheelType=state.pendingWedge.type === "bankrupt" || state.pendingWedge.type === "lose" ? "bad" : "result";
+    ui.secondaryText=feedback ? turnText : "";
+    return ui;
+  }
+  ui.secondaryText=feedback ? turnText : "";
+  ui.spinHintText=canChooseConsonant ? "Mantén pulsado y suelta para girar" : "No quedan consonantes: compra vocal, resuelve o pasa";
+  return ui;
+}
+function renderTurnStatus(ui=getTurnStatusUI()) {
+  const status=$("status");
+  if (status) {
+    const type=ui.primaryType || "";
+    status.textContent=ui.primaryText;
+    status.className=`status ${type} ${feedbackClass(type)}`.trim();
+  }
+  const secondary=$("remoteBanner");
+  if (secondary) {
+    secondary.classList.toggle("hidden",!ui.secondaryText);
+    secondary.textContent=ui.secondaryText;
+  }
+}
+function renderWheelResult(ui=getTurnStatusUI()) {
   const el = $("wheelResult");
   if (!el || !state.players.length) return;
-  const notMyTurn = !onlineCanAct();
-  let text = "Lista para girar";
-  let type = "";
-  if (state.finished) text = "Panel terminado";
-  else if (state.turnAwaitingAck) text = onlineCanAct() ? "Confirma tu turno" : `Es turno de ${currentPlayer().name}`;
-  else if (state.spinning) { text = "La ruleta está en marcha"; type = "spinning"; }
-  else if (state.charging) { text = "Suelta para lanzar"; type = "charging"; }
-  else if (notMyTurn) text = `Espera a ${currentPlayer().name}`;
-  else if (state.pendingWedge) {
-    text = `Ha salido: ${wheelDisplayLabel(state.pendingWedge)}`;
-    type = state.pendingWedge.type === "bankrupt" || state.pendingWedge.type === "lose" ? "bad" : "result";
-  }
-  el.textContent = text;
-  el.className = `wheel-result ${type}`.trim();
+  el.textContent = ui.wheelButtonText;
+  el.className = `wheel-result ${ui.wheelType}`.trim();
 }
 function renderUsedLetters() {
   const used = LETTERS.filter(l => state.used.has(l));
@@ -221,13 +348,21 @@ function canAcknowledgeTurn() {
 }
 function showTurnReadyModal() {
   if (!state.turnAwaitingAck || !canAcknowledgeTurn()) return;
+  const key=currentTurnKey();
+  if (activeTurnModalKey === key && !$("modalBackdrop").classList.contains("hidden")) return;
+  activeTurnModalKey=key;
   $("modal").className="modal turn-ready-modal";
   $("modal").innerHTML=`<div class="modal-icon">▶</div><h2>Es tu turno</h2><p><strong>${currentPlayer().name}</strong>, pulsa para empezar. El tiempo no corre hasta que aceptes.</p><button id="ackTurnBtn" class="modal-btn">EMPEZAR TURNO</button>`;
   $("modalBackdrop").classList.remove("hidden");
-  sfx("turn");
+  notifyTurnIfNeeded();
   $("ackTurnBtn").addEventListener("click",()=>{
+    unlockAudio();
     $("modalBackdrop").classList.add("hidden");
+    activeTurnModalKey="";
     state.turnAwaitingAck=false;
+    state.turnAcceptedAt=Date.now();
+    state.turnAcceptedBy=state.active;
+    state.turnPhase="active";
     state.activity="";
     resetTurnTimer();
     setStatus(`Turno de ${currentPlayer().name}`);
@@ -235,10 +370,15 @@ function showTurnReadyModal() {
     syncOnline("turn_ack");
   });
 }
-function requestTurnAck(message=`Turno de ${currentPlayer().name}`) {
+function requestTurnAck(message=`Turno de ${currentPlayer().name}`, type="spin-result") {
+  state.turnId=(state.turnId || 0) + 1;
   state.turnAwaitingAck=true;
+  state.turnAcceptedAt=0;
+  state.turnAcceptedBy=-1;
+  state.turnPhase="waiting_ack";
+  activeTurnModalKey="";
   stopTurnTimer();
-  setStatus(message,"spin-result");
+  setStatus(message,type);
   render();
   showTurnReadyModal();
 }
@@ -250,7 +390,8 @@ function initializeGame(names, panels=selectProgressivePanels(), playerSlots=nam
   state.jackpotClaimed=false; state.jackpotWinner=""; state.jackpotClaimedAmount=0; state.screen="game"; state.history=[]; state.activity="";
   state.shortRound=Boolean(options.shortRound);
   state.turnSeconds=state.shortRound ? SHORT_TURN_SECONDS : TURN_SECONDS;
-  state.turnAwaitingAck=false;
+  state.turnAwaitingAck=false; state.turnId=0; state.turnAcceptedAt=0; state.turnAcceptedBy=-1; state.turnPhase="idle";
+  lastNotifiedTurnKey=""; activeTurnModalKey=""; pendingTurnNotification=false;
   stopTurnTimer();
   $("wheel").style.transform="rotate(0deg)";
 }
@@ -289,6 +430,7 @@ function render() {
   const actionLocked=state.spinning||state.charging||state.choosing||state.finished||notMyTurn||state.turnAwaitingAck;
   const canChooseConsonant=availableConsonants().length>0 && hiddenConsonants().length>0;
   const noConsonants=hiddenConsonants().length===0 || availableConsonants().length===0;
+  const turnStatusUI=getTurnStatusUI({ canChooseConsonant });
   const canBuyVowel=!actionLocked && currentPlayer().roundMoney>=50 && hiddenVowels().length>0;
   const canSolve=!actionLocked;
   const canPass=!actionLocked && noConsonants;
@@ -324,21 +466,20 @@ function render() {
     const card=$("playerCard"+i), p=state.players[i];
     card.classList.toggle("hidden",!p);
     if (!p) continue;
-    card.querySelector(".player-tag").textContent=`Jugador ${i+1}`;
+    card.querySelector(".player-tag").textContent=i===state.active ? "Turno" : `J${i+1}`;
     $("playerName"+i).textContent=p.name; $("roundMoney"+i).textContent=money(p.roundMoney); $("totalMoney"+i).textContent=money(p.total);
     card.classList.toggle("active",i===state.active);
-    const wc=$("wildcard"+i); wc.textContent=p.wildcard?"◆ Comodín":"";
+    card.classList.toggle("has-wildcard",Boolean(p.wildcard));
+    const wc=$("wildcard"+i); wc.textContent=p.wildcard?"Comodín x1":"Comodín x0";
     wc.classList.toggle("owned",p.wildcard);
-    wc.classList.toggle("hidden",!p.wildcard);
   }
   renderBoard(state.finished);
   renderUsedLetters();
   $("wheel").setAttribute("aria-disabled",String(actionLocked || !canChooseConsonant));
   document.querySelector(".wheel-zone").classList.toggle("disabled",actionLocked||!canChooseConsonant);
-  $("spinHint").textContent=state.spinning?"Buscando gajo ganador":(state.charging?"Cargando giro":(state.turnAwaitingAck?"Confirma el turno para empezar":(notMyTurn?`Esperando a ${currentPlayer().name}`:(!canChooseConsonant?"No quedan consonantes: compra vocal, resuelve o pasa":"Mantén y suelta para girar"))));
-  renderWheelResult();
-  $("remoteBanner").classList.toggle("hidden",!(online.enabled && notMyTurn && !state.finished && state.activity!=="solving"));
-  $("remoteBanner").textContent=activityText();
+  $("spinHint").textContent=turnStatusUI.spinHintText;
+  renderTurnStatus(turnStatusUI);
+  renderWheelResult(turnStatusUI);
   $("vowelBtn").disabled=!canBuyVowel;
   $("solveBtn").disabled=!canSolve;
   $("passTurnBtn").disabled=!canPass;
@@ -427,11 +568,21 @@ function startVoiceDictation(input) {
 }
 function setStatus(text,type="") {
   state.statusText=text; state.statusType=type;
-  const el=$("status"); el.textContent=text; el.className=`status ${type} ${feedbackClass(type)} status-ping`.trim();
+  const el=$("status");
+  if (state.screen==="game" && state.players.length) renderTurnStatus();
+  else {
+    el.textContent=text;
+    el.className=`status ${type} ${feedbackClass(type)}`.trim();
+  }
+  el.classList.add("status-ping");
   setTimeout(() => el.classList.remove("status-ping"), 460);
 }
 function hideChoices() { state.choosing=false; state.choiceMode=""; state.activity=""; $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML=""; }
 function showChoices(letters,title,handler,kind="",options={}) {
+  if (!canUseTurnAction()) {
+    rejectBlockedTurnAction();
+    return;
+  }
   if (!letters.length) {
     state.choosing=false;
     state.choiceMode="";
@@ -452,6 +603,7 @@ function showChoices(letters,title,handler,kind="",options={}) {
       event.preventDefault();
       event.stopPropagation();
       if (used || b.disabled) return;
+      if (!canUseTurnAction()) { rejectBlockedTurnAction(); return; }
       used=true; b.disabled=true;
       handler(letter);
     };
@@ -466,7 +618,7 @@ function showChoices(letters,title,handler,kind="",options={}) {
 
 // Giro por carga: mantener pulsado aumenta la fuerza y soltar inicia la inercia.
 function wheelLocked() {
-  return state.spinning||state.charging||state.choosing||state.finished||state.turnAwaitingAck||!onlineCanAct()||availableConsonants().length===0||hiddenConsonants().length===0;
+  return state.spinning||state.charging||state.choosing||!canUseTurnAction()||availableConsonants().length===0||hiddenConsonants().length===0;
 }
 function updatePowerMeter(value) {
   const rounded=Math.round(value); $("forceFill").style.width=`${value}%`;
@@ -474,16 +626,21 @@ function updatePowerMeter(value) {
   $("forceFill").setAttribute("aria-valuenow",String(rounded)); $("powerValue").textContent=value?`Suelta para girar · ${rounded}%`:"Mantén pulsado";
 }
 function startCharge(event) {
-  if (wheelLocked()) return;
-  event.preventDefault(); stopTurnTimer(); state.activity="charging"; state.charging=true; state.charge=0; state.chargeStart=performance.now();
+  if (wheelLocked()) { rejectBlockedTurnAction(); return; }
+  event.preventDefault(); stopTurnTimer(); state.activity="charging"; state.turnPhase="charging"; state.charging=true; state.charge=0; state.chargeStart=performance.now();
   $("wheel").classList.add("charging"); $("wheel").setPointerCapture?.(event.pointerId);
   sfx("charge"); setStatus("Cargando fuerza","spin-result"); render();
   syncOnline("charge");
   sendOnlineEvent("wheel_charge", { charge: 0 });
   let lastChargeSync = 0;
+  let lastChargePaint = 0;
   function charge(now) {
     if (!state.charging) return;
-    state.charge=Math.min(100,(now-state.chargeStart)/18); updatePowerMeter(state.charge);
+    state.charge=Math.min(100,(now-state.chargeStart)/18);
+    if (now-lastChargePaint>33 || state.charge>=100) {
+      lastChargePaint=now;
+      updatePowerMeter(state.charge);
+    }
     if (now-lastChargeSync>120) {
       lastChargeSync=now;
       sendOnlineEvent("wheel_charge", { charge: state.charge });
@@ -493,15 +650,16 @@ function startCharge(event) {
   state.chargeFrame=requestAnimationFrame(charge);
 }
 function endCharge(event) {
+  if (!canUseTurnAction()) { if (state.charging) cancelCharge(event); else rejectBlockedTurnAction(); return; }
   if (!state.charging) return; state.charging=false; cancelAnimationFrame(state.chargeFrame); $("wheel").classList.remove("charging");
   try { $("wheel").releasePointerCapture?.(event.pointerId); } catch (_) {}
   if (state.charge<8) {
-    state.charge=0; state.activity=""; updatePowerMeter(0); resetTurnTimer(); sfx("bad");
+    state.charge=0; state.activity=""; state.turnPhase="active"; updatePowerMeter(0); resetTurnTimer(); sfx("bad");
     setStatus("Giro demasiado flojo. Inténtalo con más fuerza.","bad");
     render(); syncOnline("weak_spin");
     return;
   }
-  state.velocity=-(5+state.charge*.3); state.spinning=true; state.activity="spinning"; state.lastTick=-1; sfx("spin"); render();
+  state.velocity=-(5+state.charge*.3); state.spinning=true; state.activity="spinning"; state.turnPhase="spinning"; state.lastTick=-1; sfx("spin"); render();
   setStatus("Girando la ruleta");
   syncOnline("spin_start");
   sendOnlineEvent("wheel_spin_start", { rotation: state.currentRotation });
@@ -526,7 +684,7 @@ function cancelCharge(event) {
   if (!state.charging) return; state.charging=false; cancelAnimationFrame(state.chargeFrame); state.charge=0;
   $("wheel").classList.remove("charging"); updatePowerMeter(0);
   try { $("wheel").releasePointerCapture?.(event.pointerId); } catch (_) {}
-  state.activity=""; resetTurnTimer();
+  state.activity=""; state.turnPhase="active"; resetTurnTimer();
   setStatus(`Turno de ${currentPlayer().name}`); render(); syncOnline("charge_cancel");
   sendOnlineEvent("wheel_charge_cancel");
 }
@@ -535,7 +693,7 @@ function stopWheel() {
   const normalized=((state.currentRotation%360)+360)%360;
   const winner=Math.floor(normalized/(360/WEDGES.length))%WEDGES.length;
   sendOnlineEvent("wheel_spin_end", { rotation: state.currentRotation, winner });
-  state.pendingWedge=state.activeWedges[winner]; state.activity="wedge"; highlightWedge(winner); resolveWedge(state.pendingWedge);
+  state.pendingWedge=state.activeWedges[winner]; state.activity="wedge"; state.turnPhase="wedge"; highlightWedge(winner); resolveWedge(state.pendingWedge);
 }
 function resolveWedge(w) {
   addHistory(`${currentPlayer().name} cayó en ${w.label}${w.value?` (${money(w.value)})`:""}`,"spin");
@@ -546,7 +704,7 @@ function resolveWedge(w) {
     pulseCurrentPlayer("comodin-earned");
     pulseId(`totalMoney${state.active}`,"money-bump");
     pulseId(`roundMoney${state.active}`,"money-bump");
-    setStatus(`Ha salido BOTE. ${currentPlayer().name} gana ${money(state.jackpotClaimedAmount)} y mantiene el turno.`,"good"); syncOnline("jackpot"); return;
+    setStatus(`Ha salido BOTE. ${currentPlayer().name} gana ${money(state.jackpotClaimedAmount)}.`,"good"); syncOnline("jackpot"); return;
   }
   if (w.type==="bankrupt") {
     stopTurnTimer();
@@ -558,7 +716,7 @@ function resolveWedge(w) {
     setStatus(`QUIEBRA: pierdes ${money(lost)}${lost?" y pasan al bote final":""}.`,"bad");
     offerWildcard("quiebra"); return;
   }
-  if (w.type==="lose") { stopTurnTimer(); sfx("bad"); addHistory(`${currentPlayer().name} pierde turno`,"bad"); pulseCurrentPlayer("is-lose-turn"); setStatus(`Pierdes turno. Juega ${state.players[nextPlayerIndex()].name}.`,"bad"); offerWildcard("pierde turno"); return; }
+  if (w.type==="lose") { stopTurnTimer(); sfx("bad"); addHistory(`${currentPlayer().name} pierde turno`,"bad"); pulseCurrentPlayer("is-lose-turn"); setStatus("Pierdes turno.","bad"); offerWildcard("pierde turno"); return; }
   if (w.type==="wildcard" && !currentPlayer().wildcard) { currentPlayer().wildcard=true; addHistory(`${currentPlayer().name} consigue comodín`,"wildcard"); }
   if (["wildcard","x2","half"].includes(w.type)) pulseCurrentPlayer("comodin-earned");
   if (!hiddenConsonants().length || !availableConsonants().length) {
@@ -573,6 +731,7 @@ function resolveWedge(w) {
   if (w.type==="wildcard") pulseId(`wildcard${state.active}`,"comodin-earned");
 }
 function chooseConsonant(letter) {
+  if (!canUseTurnAction() || state.choiceMode!=="consonant") { rejectBlockedTurnAction(); return; }
   hideChoices(); state.used.add(letter); const count=occurrences(letter), w=state.pendingWedge, p=currentPlayer();
   if (count>0) {
     state.lastRevealed=letter; let detail="", boteDetail="", jackpotChanged=false, moneyChanged=false;
@@ -593,26 +752,30 @@ function chooseConsonant(letter) {
     if(jackpotChanged) bumpJackpot(); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("consonant");
   } else {
     addHistory(`${p.name} eligió ${letter}: no está`,"bad");
-    stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}. Turno para ${state.players[nextPlayerIndex()].name}.`,"bad"); render(); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard("consonante fallida");
+    stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}.`,"bad"); render(); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard("consonante fallida");
   }
 }
 
 function buyVowel() {
-  if (!onlineCanAct() || currentPlayer().roundMoney<50) return;
+  if (!canUseTurnAction() || state.spinning || state.charging || state.choosing || currentPlayer().roundMoney<50 || hiddenVowels().length===0) {
+    rejectBlockedTurnAction();
+    return;
+  }
   setStatus("Elige una vocal","spin-result");
   showChoices(hiddenVowels(),"Elige una vocal",chooseVowel,"vowel");
 }
 function chooseVowel(letter) {
+  if (!canUseTurnAction() || state.choiceMode!=="vowel") { rejectBlockedTurnAction(); return; }
   hideChoices(); const p=currentPlayer(); p.roundMoney-=50; state.used.add(letter); const count=occurrences(letter);
   if (count>0) { state.lastRevealed=letter; addHistory(`${p.name} compró ${letter}: ${count} acierto${count>1?"s":""}`,"vowel"); resetTurnTimer(); sfx("good"); setStatus(`Correcto: ${letter} aparece ${count} ${count===1?"vez":"veces"}. La vocal ha costado 50 €.`,"good"); render(); pulseId(`roundMoney${state.active}`,"money-lost"); pulseCurrentPlayer("feedback-positive"); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("vowel"); }
-  else { addHistory(`${p.name} compró ${letter}: no está`,"bad"); stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}. Pierdes 50 € y juega ${state.players[nextPlayerIndex()].name}.`,"bad"); render(); pulseId(`roundMoney${state.active}`,"money-lost"); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard("vocal fallida"); }
+  else { addHistory(`${p.name} compró ${letter}: no está`,"bad"); stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}. Pierdes 50 €.`,"bad"); render(); pulseId(`roundMoney${state.active}`,"money-lost"); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard("vocal fallida"); }
 }
 function checkAutoSolved() {
   const remaining=LETTERS.some(l=>currentPanel().answer.includes(l)&&!state.used.has(l));
   if (!remaining) setTimeout(()=>finishRound(state.active),650);
 }
 function passTurn() {
-  if (!onlineCanAct() || state.finished || state.turnAwaitingAck || hiddenConsonants().length>0) return;
+  if (!canUseTurnAction() || hiddenConsonants().length>0) { rejectBlockedTurnAction(); return; }
   const passer=currentPlayer().name;
   stopTurnTimer();
   addHistory(`${passer} pasa turno sin consonantes disponibles`,"turn");
@@ -620,9 +783,9 @@ function passTurn() {
 }
 
 function openSolve() {
-  if (!onlineCanAct()) return;
+  if (!canUseTurnAction() || state.spinning || state.charging || state.choosing) { rejectBlockedTurnAction(); return; }
   state.solveDraft="";
-  state.choosing=true; state.activity="solving"; stopTurnTimer(); setStatus("Resolver panel. El tiempo está pausado.","spin-result"); render(); syncOnline("solving");
+  state.choosing=true; state.activity="solving"; state.turnPhase="resolving"; stopTurnTimer(); setStatus("Resolver panel. El tiempo está pausado.","spin-result"); render(); syncOnline("solving");
   $("modal").className="modal solve-modal";
   $("modal").innerHTML=`<div class="modal-icon">💡</div><h2>Resolver panel</h2>${solvePanelPreview()}<p>Escribe la solución completa. Las tildes no son necesarias.</p><form id="solveForm"><div class="solve-input-wrap"><textarea id="solutionInput" aria-label="Solución" autocomplete="off" autocapitalize="sentences" autocorrect="on" spellcheck="true" rows="2" placeholder="ESCRIBE AQUÍ..."></textarea><button id="dictateSolveBtn" class="dictate-btn" type="button" aria-label="Dictar respuesta" title="Dictar respuesta">🎙</button></div><div class="modal-actions"><button type="button" id="cancelSolve" class="modal-btn alt">CANCELAR</button><button class="modal-btn">COMPROBAR</button></div></form>`;
   $("modalBackdrop").classList.remove("hidden"); syncVisibleViewport(); setTimeout(()=>{ $("solutionInput").focus(); syncVisibleViewport(); },50);
@@ -655,13 +818,16 @@ function closeModal(shouldSync=true) {
   $("modalBackdrop").classList.add("hidden");
   document.body.classList.remove("keyboard-visible");
   state.choosing=false; state.activity=""; state.solveDraft="";
+  if (wasSolving) state.turnPhase="active";
   if (wasSolving) setStatus(`Turno de ${currentPlayer().name}`);
   resetTurnTimer(); render();
   if (wasSolving) sendOnlineEvent("solve_draft", { draft: "" });
   if (wasSolving && shouldSync) syncOnline("solve_cancel");
 }
 function checkSolution(e) {
-  e.preventDefault(); const attempt=$("solutionInput").value;
+  e.preventDefault();
+  if (!canUseTurnAction() || state.activity!=="solving") { rejectBlockedTurnAction(); return; }
+  const attempt=$("solutionInput").value;
   const cleanAttempt=attempt.trim();
   const spokenAttempt=cleanAttempt || "sin respuesta";
   const correct=normalize(attempt)===normalize(currentPanel().answer);
@@ -675,9 +841,8 @@ function checkSolution(e) {
     closeModal(false);
     sendOnlineEvent("solve_result", { attempt: spokenAttempt, correct: false });
     stopTurnTimer(); if(!state.jackpotClaimed) state.jackpot+=50; sfx("bad");
-    const next=state.players[nextPlayerIndex()].name;
     addHistory(`${currentPlayer().name} respondió "${spokenAttempt}" y falló`,"bad");
-    switchTurn(`No es correcto: "${spokenAttempt}".${state.jackpotClaimed?"":" +50 € al bote final."} Turno de ${next}.`); if(!state.jackpotClaimed) bumpJackpot();
+    switchTurn(`No es correcto: "${spokenAttempt}".${state.jackpotClaimed?"":" +50 € al bote final."}`); if(!state.jackpotClaimed) bumpJackpot();
   }
 }
 
@@ -696,20 +861,19 @@ function openExitConfirm() {
 
 function offerWildcard(reason) {
   if (!currentPlayer().wildcard) { setTimeout(switchTurn,700); return; }
+  if (!canUseTurnAction()) { setTimeout(switchTurn,700); return; }
   state.choosing=true; render();
   $("modal").className="modal";
   $("modal").innerHTML=`<div class="modal-icon">◆</div><h2>¿Usar comodín?</h2><p>Has sufrido ${reason}. Puedes gastar tu comodín para conservar el turno.</p><div class="modal-actions"><button id="declineWild" class="modal-btn alt">NO, PASAR TURNO</button><button id="useWild" class="modal-btn">USAR COMODÍN</button></div>`;
   $("modalBackdrop").classList.remove("hidden");
-  $("useWild").addEventListener("click",()=>{ addHistory(`${currentPlayer().name} usa comodín y conserva turno`,"wildcard"); currentPlayer().wildcard=false; closeModal(); setStatus("Comodín usado. Conservas el turno.","good"); render(); syncOnline("wildcard"); });
-  $("declineWild").addEventListener("click",()=>{ addHistory(`${currentPlayer().name} no usa comodín`,"turn"); closeModal(); switchTurn(); });
+  $("useWild").addEventListener("click",()=>{ if (!canUseTurnAction()) { rejectBlockedTurnAction(); return; } addHistory(`${currentPlayer().name} usa comodín y conserva turno`,"wildcard"); currentPlayer().wildcard=false; closeModal(); setStatus("Comodín usado. Conservas el turno.","good"); render(); syncOnline("wildcard"); });
+  $("declineWild").addEventListener("click",()=>{ if (!canUseTurnAction()) { rejectBlockedTurnAction(); return; } addHistory(`${currentPlayer().name} no usa comodín`,"turn"); closeModal(); switchTurn(); });
 }
 function switchTurn(message="") {
   hideChoices(); state.active=nextPlayerIndex(); state.pendingWedge=null; state.activity="";
   addHistory(`Turno de ${currentPlayer().name}`,"turn");
-  state.turnAwaitingAck=true;
-  stopTurnTimer();
-  setStatus(message||`Turno de ${currentPlayer().name}`,message?"bad":"spin-result");
-  render(); pulseCurrentPlayer("is-turn-changing"); showTurnReadyModal(); syncOnline("turn");
+  requestTurnAck(message||`Turno de ${currentPlayer().name}`,message?"bad":"spin-result");
+  pulseCurrentPlayer("is-turn-changing"); syncOnline("turn");
 }
 
 function finishRound(winnerIndex) {
@@ -774,6 +938,9 @@ buildWheel();
 initSharedRoom();
 document.addEventListener("pointerdown",unlockAudio,{ passive:true });
 document.addEventListener("touchstart",unlockAudio,{ passive:true });
+document.addEventListener("pointerdown",flushPendingTurnNotification,{ passive:true });
+document.addEventListener("touchstart",flushPendingTurnNotification,{ passive:true });
+document.addEventListener("keydown",flushPendingTurnNotification,{ passive:true });
 $("startForm").addEventListener("submit",startGame);
 $("showLocalBtn").addEventListener("click",toggleLocalSetup);
 $("createRoomBtn").addEventListener("click",createRoom);

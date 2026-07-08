@@ -12,19 +12,25 @@ export function createEffects($) {
   }
 
   function celebrate(amount = 70) {
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (reduceMotion) return;
+
     const layer = $("confettiLayer");
+    const mobile = window.matchMedia?.("(hover: none), (pointer: coarse), (max-width: 900px)")?.matches;
+    const count = mobile ? Math.min(amount, 32) : amount;
+    const lifetime = mobile ? 3600 : 5200;
     const colors = ["#ffd53d", "#4de6e2", "#ff5364", "#54e59a", "#8e69d5", "#ffffff"];
-    for (let i = 0; i < amount; i++) {
+    for (let i = 0; i < count; i++) {
       const piece = document.createElement("i");
       piece.className = "confetti";
       piece.style.left = `${Math.random() * 100}%`;
       piece.style.background = colors[i % colors.length];
-      piece.style.setProperty("--duration", `${2.4 + Math.random() * 2.2}s`);
-      piece.style.setProperty("--drift", `${-120 + Math.random() * 240}px`);
-      piece.style.setProperty("--turn", `${360 + Math.random() * 900}deg`);
+      piece.style.setProperty("--duration", `${(mobile ? 1.8 : 2.4) + Math.random() * (mobile ? 1.2 : 2.2)}s`);
+      piece.style.setProperty("--drift", `${-90 + Math.random() * 180}px`);
+      piece.style.setProperty("--turn", `${260 + Math.random() * 640}deg`);
       piece.style.animationDelay = `${Math.random() * .45}s`;
       layer.appendChild(piece);
-      setTimeout(() => piece.remove(), 5200);
+      setTimeout(() => piece.remove(), lifetime);
     }
   }
 

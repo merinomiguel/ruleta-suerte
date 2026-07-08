@@ -66,12 +66,15 @@
   display: block;
   cursor: grab;
   filter: drop-shadow(0 16px 22px rgba(8,20,64,.26));
-  will-change: transform;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+}
+#gameScreen.is-spinning #wheel,
+#gameScreen.is-charging-spin #wheel {
+  will-change: transform;
 }
 #wheel *, .wheel-zone * {
   user-select: none;
@@ -98,6 +101,10 @@
 #wheel .wheel-wedge--bankrupt .wheel-label--special { font-size: 7.8px; }
 #wheel .wheel-label--stacked { font-size: 7.8px; stroke-width: 1px; }
 #wheel .wheel-label--tight { letter-spacing: 0; }
+.wheel-slice.is-highlighted {
+  stroke: rgba(255,255,255,.92);
+  stroke-width: 3px;
+}
 .wheel-center {
   position: absolute;
   inset: 50% auto auto 50%;
@@ -245,10 +252,11 @@
   box-shadow: 0 9px 0 rgba(105,0,30,.18), 0 16px 26px rgba(255,92,122,.24);
 }
 #gameScreen.is-waiting-spin .action-btn.resolve {
-  color: #52608a;
-  background: rgba(239,244,255,.84);
-  border: 1px solid rgba(31,48,105,.14);
-  box-shadow: none;
+  color: #1737b8;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(226,236,255,.94));
+  border: 1px solid rgba(38,88,246,.32);
+  box-shadow: 0 7px 0 rgba(15,40,120,.08), 0 14px 22px rgba(38,88,246,.14);
 }
 #gameScreen.is-no-consonants .action-btn.resolve {
   color: #ffffff;
@@ -260,16 +268,41 @@
 #gameScreen.is-no-consonants .action-btn.pass-turn {
   display: inline-flex;
 }
+
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+  .wheel-zone {
+    box-shadow: 0 8px 0 rgba(8,20,64,.1), 0 16px 24px rgba(8,20,64,.18), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .wheel-zone::before {
+    display: none;
+  }
+  .pointer,
+  #wheel,
+  #wheel.charging,
+  #gameScreen.is-spinning #wheel,
+  #gameScreen.is-charging-spin #wheel {
+    filter: none;
+  }
+  .wheel-center {
+    box-shadow: 0 6px 0 rgba(8,20,64,.14), 0 10px 16px rgba(14,28,76,.18), inset 0 1px 5px rgba(255,255,255,.26);
+  }
+  .power-fill {
+    transition: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
+  }
+}
 #gameScreen.is-solving .action-btn.resolve {
   color: #ffffff;
   background: linear-gradient(135deg, #058b70, var(--accent));
   box-shadow: 0 12px 26px rgba(6,151,117,.3);
 }
 .action-btn:disabled {
-  color: #7d88aa;
-  background: rgba(229,235,249,.64);
-  border-color: rgba(31,48,105,.12);
-  box-shadow: none;
+  opacity: .78;
+  filter: none;
+  color: #66749e;
+  background: rgba(232,238,250,.82);
+  border-color: rgba(31,48,105,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
 }
 .letters-used {
   margin-top: 10px;

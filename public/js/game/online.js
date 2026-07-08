@@ -1,5 +1,5 @@
 import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js?v=mobile-ux-1";
-import { getPlayerToken, rememberOnlineSeat, rememberedPlayerToken, rememberedRoomCode, safeStorageGet, safeStorageRemove, safeStorageSet } from "./storage.js";
+import { getPlayerToken, rememberOnlineSeat, rememberedRoomCode, safeStorageGet, safeStorageRemove, safeStorageSet } from "./storage.js";
 
 export function createOnlineController(ctx) {
   const {
@@ -131,6 +131,17 @@ export function createOnlineController(ctx) {
     const codeValue=document.createElement("strong"); codeValue.textContent=online.roomCode;
     code.append(codeLabel,codeValue);
     summary.append(copy,code); panel.appendChild(summary);
+    const settings=document.createElement("div"); settings.className="lobby-settings";
+    const settingCopy=document.createElement("div"); settingCopy.className="lobby-setting-copy";
+    const settingTitle=document.createElement("strong"); settingTitle.textContent="Ajustes de sala";
+    const settingHint=document.createElement("span"); settingHint.textContent=online.isHost ? "Configura la partida antes de empezar." : "Configurado por el anfitrión.";
+    settingCopy.append(settingTitle,settingHint);
+    const shortLabel=document.createElement("label"); shortLabel.className="setup-option lobby-setup-option";
+    const shortInput=document.createElement("input"); shortInput.id="shortRoundToggle"; shortInput.type="checkbox"; shortInput.checked=Boolean(state.shortRound); shortInput.disabled=!online.isHost;
+    shortInput.addEventListener("change",()=>{ state.shortRound=shortInput.checked; });
+    shortLabel.append(shortInput,document.createTextNode(" Ronda corta · turnos de 20s"));
+    settings.append(settingCopy,shortLabel);
+    panel.appendChild(settings);
     const playersTitle=document.createElement("p"); playersTitle.className="lobby-players-title"; playersTitle.textContent="Jugadores conectados";
     panel.appendChild(playersTitle);
     const list=document.createElement("div"); list.className="lobby-list";
@@ -392,6 +403,10 @@ export function createOnlineController(ctx) {
     state.spinning=false;
     state.activity="";
     state.turnAwaitingAck=true;
+    state.turnId=(state.turnId || 0) + 1;
+    state.turnAcceptedAt=0;
+    state.turnAcceptedBy=-1;
+    state.turnPhase="waiting_ack";
     state.charge=0;
     updatePowerMeter(0);
     $("choicePanel").classList.add("hidden");
@@ -416,7 +431,8 @@ export function createOnlineController(ctx) {
       statusText: state.statusText, statusType: state.statusType, screen: state.screen,
       history: state.history, timerDeadline: state.timerDeadline, timerRemaining: state.timerRemaining,
       activity: state.activity, solveDraft: state.solveDraft,
-      turnAwaitingAck: state.turnAwaitingAck, turnSeconds: state.turnSeconds, shortRound: state.shortRound
+      turnAwaitingAck: state.turnAwaitingAck, turnSeconds: state.turnSeconds, shortRound: state.shortRound,
+      turnId: state.turnId, turnAcceptedAt: state.turnAcceptedAt, turnAcceptedBy: state.turnAcceptedBy, turnPhase: state.turnPhase
     };
   }
   function sendOnlineEvent(type,payload={}) {
@@ -517,6 +533,11 @@ export function createOnlineController(ctx) {
     state.turnAwaitingAck=Boolean(snapshot.turnAwaitingAck);
     state.turnSeconds=snapshot.turnSeconds||TURN_SECONDS;
     state.shortRound=Boolean(snapshot.shortRound);
+    state.turnId=Number(snapshot.turnId)||0;
+    state.turnAcceptedAt=Number(snapshot.turnAcceptedAt)||0;
+    const acceptedBy=Number(snapshot.turnAcceptedBy);
+    state.turnAcceptedBy=Number.isFinite(acceptedBy) ? acceptedBy : -1;
+    state.turnPhase=snapshot.turnPhase || (state.turnAwaitingAck ? "waiting_ack" : "active");
     state.spinning=false; state.charging=false; state.choosing=false; state.charge=0; updatePowerMeter(0); $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML="";
     ensureTimerLoop(); updateTimerDisplay();
     $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
@@ -546,7 +567,7 @@ export function createOnlineController(ctx) {
     if (["charging","spinning"].includes(state.activity)) {
       state.activity="";
       resetTurnTimer();
-      setStatus(`Turno recuperado para ${currentPlayer().name}. Mantén pulsada la ruleta para girar.`,"spin-result");
+      setStatus(`Turno recuperado para ${currentPlayer().name}.`,"spin-result");
       render();
       return true;
     }
@@ -561,20 +582,13 @@ export function createOnlineController(ctx) {
   function initSharedRoom() {
     const params=new URLSearchParams(location.search), code=(params.get("sala")||params.get("room")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
     const remembered=rememberedRoomCode();
-    const rememberedToken=rememberedPlayerToken();
     const rememberedName=safeStorageGet("ruletaPlayerName");
     if (rememberedName) $("onlineName").value=rememberedName;
     setInviteMode(code);
     const target=code||remembered;
     if (!target) return;
     $("roomCodeInput").value=target;
-    const canAutoRejoin=rememberedToken && remembered && target===remembered;
-    if (canAutoRejoin) {
-      joinRoomByCode(target,rememberedName||$("onlineName").value.trim()||"Jugador",true);
-      return;
-    }
     if (code) setOnlineStatus(`Código ${roomCodeMarkup(code)} detectado en el enlace. Escribe tu nombre y pulsa Entrar.`, "good");
-    else setOnlineStatus(`Tienes una sala reciente: ${roomCodeMarkup(target)}. Pulsa Entrar para reconectar a tu puesto.`, "good");
   }
   function resumeOnlineConnection() {
     if (!online.enabled || !online.roomCode || !online.token) return;

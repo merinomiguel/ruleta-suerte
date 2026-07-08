@@ -176,9 +176,12 @@ export function createWheel($, state) {
   }
 
   function highlightWedge(index) {
-    document.querySelectorAll("#wheel path").forEach(p => p.style.filter = "");
+    document.querySelectorAll("#wheel .wheel-slice").forEach(p => {
+      p.classList.remove("is-highlighted");
+      p.style.filter = "";
+    });
     const p = document.querySelector(`#wheel path[data-wedge="${index}"]`);
-    if (p) p.style.filter = "brightness(1.18) saturate(1.08) drop-shadow(0 0 7px rgba(255,255,255,.82))";
+    if (p) p.classList.add("is-highlighted");
   }
 
   return { buildWheel, highlightWedge };
