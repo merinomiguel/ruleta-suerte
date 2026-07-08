@@ -1,4 +1,4 @@
-import { JACKPOT_ROUND, WEDGES } from "./config.js?v=mobile-ux-1";
+import { JACKPOT_ROUND, WEDGES } from "./config.js?v=mobile-ux-2";
 
 function polar(cx, cy, r, angle) {
   const rad = (angle - 90) * Math.PI / 180;

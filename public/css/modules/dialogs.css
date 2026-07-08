@@ -81,12 +81,13 @@
   padding: max(18px, calc(env(safe-area-inset-top) + 12px)) 16px max(18px, calc(env(safe-area-inset-bottom) + 12px));
   background: rgba(16,26,61,.58);
   backdrop-filter: blur(16px) saturate(1.04);
-  overflow: auto;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 .modal {
   width: min(520px, 100%);
   max-height: calc(100dvh - max(36px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom) + 28px)));
-  overflow: auto;
+  overflow: hidden;
   padding: clamp(20px, 5vw, 30px);
   border: 1px solid rgba(255,255,255,.28);
   border-radius: 24px;
@@ -105,6 +106,7 @@
 }
 .modal.solve-modal {
   width: min(720px, 100%);
+  overflow: hidden;
 }
 body.keyboard-visible .modal-backdrop {
   align-items: flex-start;
@@ -112,6 +114,18 @@ body.keyboard-visible .modal-backdrop {
 }
 body.keyboard-visible .solve-modal {
   max-height: calc(var(--visible-viewport-height, 100dvh) - max(16px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom) + 14px)));
+}
+body.keyboard-visible .solve-context {
+  gap: 5px;
+  margin-block: 5px 7px;
+}
+body.keyboard-visible .solve-preview-board {
+  min-height: 52px;
+  max-height: 16dvh;
+  padding: 6px;
+}
+body.keyboard-visible .solve-meta {
+  display: none;
 }
 @keyframes modalIn { from { opacity:0; transform: translateY(20px) scale(.94); } }
 .modal-icon {
@@ -142,6 +156,9 @@ body.keyboard-visible .solve-modal {
   resize: none;
   line-height: 1.28;
   overflow: auto;
+  font-size: 1rem;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .turn-ready-modal {
   width: min(460px, 100%);
@@ -176,6 +193,15 @@ body.keyboard-visible .solve-modal {
 .dictate-btn:hover:not(:disabled) {
   color: #ffffff;
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
+}
+.dictate-btn.is-listening,
+.dictate-btn.is-starting {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--danger), var(--prize-2));
+  box-shadow: 0 6px 0 rgba(105,0,30,.14), 0 12px 20px rgba(255,92,122,.22);
+}
+.dictate-btn.is-stopping {
+  opacity: .72;
 }
 .solve-context {
   display: grid;

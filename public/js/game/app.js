@@ -1,14 +1,14 @@
 "use strict";
 
-import { CONSONANTS, JACKPOT_ROUND, LETTERS, MAX_PLAYERS, SHORT_TURN_SECONDS, TOTAL_ROUNDS, TURN_SECONDS, VOWELS, WEDGES } from "./config.js?v=mobile-ux-1";
+import { CONSONANTS, JACKPOT_ROUND, LETTERS, MAX_PLAYERS, SHORT_TURN_SECONDS, TOTAL_ROUNDS, TURN_SECONDS, VOWELS, WEDGES } from "./config.js?v=mobile-ux-2";
 import { $ } from "./dom.js";
 import { ensureAudio, sfx, toggleSound, unlockAudio } from "./audio.js?v=mobile-ux-1";
 import { createEffects } from "./effects.js?v=mobile-perf-1";
 import { normalize, money } from "./format.js";
 import { createHistory } from "./history.js";
 import { selectProgressivePanels } from "./panels.js?v=board-resolve-1";
-import { createOnlineController } from "./online.js?v=mobile-ux-1";
-import { createWheel } from "./wheel.js?v=mobile-perf-1";
+import { createOnlineController } from "./online.js?v=mobile-ux-2";
+import { createWheel } from "./wheel.js?v=mobile-ux-2";
 
 const state = {
   players: [], panels: [], round: 0, active: 0, used: new Set(),
@@ -21,7 +21,7 @@ const state = {
   timerDeadline: 0, timerRemaining: TURN_SECONDS, timerFrame: 0, activity: "",
   solveDraft: "", turnAwaitingAck: false, turnSeconds: TURN_SECONDS, shortRound: false,
   turnId: 0, turnAcceptedAt: 0, turnAcceptedBy: -1, turnPhase: "idle",
-  lastWarningSecond: 0, speechRecognition: null
+  lastWarningSecond: 0, speechRecognition: null, speechState: "idle", solveSubmitting: false
 };
 const { animateElement, bumpJackpot, celebrate } = createEffects($);
 const { addHistory, renderHistory } = createHistory($, state);
@@ -158,6 +158,20 @@ function bindVisibleViewport() {
   window.addEventListener("resize",syncVisibleViewport);
   document.addEventListener("focusin",syncVisibleViewport);
   document.addEventListener("focusout",()=>setTimeout(syncVisibleViewport,0));
+}
+function preventPageGesture(event) {
+  if (document.body.classList.contains("playing")) event.preventDefault();
+}
+function preventPlayingTouchMove(event) {
+  if (!document.body.classList.contains("playing")) return;
+  if (event.target?.closest?.("textarea,input,[contenteditable='true']")) return;
+  event.preventDefault();
+}
+function bindMobileViewportGuards() {
+  ["gesturestart","gesturechange","gestureend"].forEach(eventName=>{
+    document.addEventListener(eventName,preventPageGesture,{ passive:false });
+  });
+  document.addEventListener("touchmove",preventPlayingTouchMove,{ passive:false });
 }
 function showGameScreen() {
   document.body.classList.add("playing");
@@ -541,28 +555,75 @@ function autoResizeSolveInput(input) {
 function setSolveDraft(value) {
   state.solveDraft=String(value || "").toUpperCase();
 }
+function setDictateButtonState(stateName) {
+  const button=$("dictateSolveBtn");
+  if (!button) return;
+  button.classList.toggle("is-starting",stateName==="starting");
+  button.classList.toggle("is-listening",stateName==="listening");
+  button.classList.toggle("is-stopping",stateName==="stopping");
+  button.textContent=stateName==="idle" ? "🎙" : "■";
+  button.setAttribute("aria-pressed",String(stateName==="starting" || stateName==="listening"));
+  button.title=stateName==="idle" ? "Dictar respuesta" : "Detener dictado";
+}
+function setSpeechState(nextState) {
+  state.speechState=nextState;
+  setDictateButtonState(nextState);
+}
+function cleanupSpeechRecognition() {
+  if (!state.speechRecognition) return;
+  state.speechRecognition.onstart=null;
+  state.speechRecognition.onresult=null;
+  state.speechRecognition.onerror=null;
+  state.speechRecognition.onend=null;
+  state.speechRecognition=null;
+}
+function stopVoiceDictation(mode="stop") {
+  const recognition=state.speechRecognition;
+  if (!recognition || state.speechState==="idle" || state.speechState==="stopping") return;
+  setSpeechState("stopping");
+  try {
+    if (mode==="abort") recognition.abort();
+    else recognition.stop();
+  } catch (_) {
+    cleanupSpeechRecognition();
+    setSpeechState("idle");
+  }
+}
 function startVoiceDictation(input) {
   const SpeechRecognition=window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     setStatus("Dictado no disponible en este navegador.","bad");
     return;
   }
+  if (state.speechState==="starting") { stopVoiceDictation("abort"); return; }
+  if (state.speechState==="listening") { stopVoiceDictation("stop"); return; }
+  if (state.speechState==="stopping") return;
   try {
-    state.speechRecognition?.stop?.();
+    cleanupSpeechRecognition();
     const recognition=new SpeechRecognition();
     state.speechRecognition=recognition;
     recognition.lang="es-ES";
     recognition.interimResults=true;
     recognition.continuous=false;
+    recognition.onstart=()=>setSpeechState("listening");
     recognition.onresult=event=>{
       const transcript=Array.from(event.results).map(result=>result[0]?.transcript||"").join(" ").trim();
       if (!transcript) return;
       input.value=transcript.toUpperCase();
       input.dispatchEvent(new Event("input", { bubbles:true }));
     };
-    recognition.onerror=()=>setStatus("No he podido usar el dictado en este navegador.","bad");
+    recognition.onerror=event=>{
+      if (event.error !== "aborted") setStatus("No he podido usar el dictado en este navegador.","bad");
+    };
+    recognition.onend=()=>{
+      cleanupSpeechRecognition();
+      setSpeechState("idle");
+    };
+    setSpeechState("starting");
     recognition.start();
-  } catch (_) {
+  } catch (error) {
+    cleanupSpeechRecognition();
+    setSpeechState("idle");
     setStatus("Dictado no disponible en este navegador.","bad");
   }
 }
@@ -784,13 +845,22 @@ function passTurn() {
 
 function openSolve() {
   if (!canUseTurnAction() || state.spinning || state.charging || state.choosing) { rejectBlockedTurnAction(); return; }
-  state.solveDraft="";
+  state.solveDraft=""; state.solveSubmitting=false; setSpeechState("idle");
   state.choosing=true; state.activity="solving"; state.turnPhase="resolving"; stopTurnTimer(); setStatus("Resolver panel. El tiempo está pausado.","spin-result"); render(); syncOnline("solving");
   $("modal").className="modal solve-modal";
-  $("modal").innerHTML=`<div class="modal-icon">💡</div><h2>Resolver panel</h2>${solvePanelPreview()}<p>Escribe la solución completa. Las tildes no son necesarias.</p><form id="solveForm"><div class="solve-input-wrap"><textarea id="solutionInput" aria-label="Solución" autocomplete="off" autocapitalize="sentences" autocorrect="on" spellcheck="true" rows="2" placeholder="ESCRIBE AQUÍ..."></textarea><button id="dictateSolveBtn" class="dictate-btn" type="button" aria-label="Dictar respuesta" title="Dictar respuesta">🎙</button></div><div class="modal-actions"><button type="button" id="cancelSolve" class="modal-btn alt">CANCELAR</button><button class="modal-btn">COMPROBAR</button></div></form>`;
-  $("modalBackdrop").classList.remove("hidden"); syncVisibleViewport(); setTimeout(()=>{ $("solutionInput").focus(); syncVisibleViewport(); },50);
+  $("modal").innerHTML=`<div class="modal-icon">💡</div><h2>Resolver panel</h2>${solvePanelPreview()}<p>Escribe la solución completa. Las tildes no son necesarias.</p><form id="solveForm"><div class="solve-input-wrap"><textarea id="solutionInput" aria-label="Solución" autocomplete="off" autocapitalize="sentences" autocorrect="on" spellcheck="true" rows="2" placeholder="ESCRIBE AQUÍ..."></textarea><button id="dictateSolveBtn" class="dictate-btn" type="button" aria-label="Dictar respuesta" aria-pressed="false" title="Dictar respuesta">🎙</button></div><div class="modal-actions"><button type="button" id="cancelSolve" class="modal-btn alt">CANCELAR</button><button id="checkSolveBtn" class="modal-btn" type="submit" disabled>COMPROBAR</button></div></form>`;
+  $("modalBackdrop").classList.remove("hidden"); syncVisibleViewport();
+  const input=$("solutionInput");
+  const focusInput=()=>{ try { input.focus({ preventScroll:true }); } catch (_) { input.focus(); } syncVisibleViewport(); };
+  focusInput();
+  requestAnimationFrame(focusInput);
   $("cancelSolve").addEventListener("click",closeModal);
-  $("dictateSolveBtn").addEventListener("click",()=>startVoiceDictation($("solutionInput")));
+  const SpeechRecognition=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    $("dictateSolveBtn").disabled=true;
+    $("dictateSolveBtn").title="Dictado no disponible en este navegador";
+  }
+  $("dictateSolveBtn").addEventListener("click",()=>startVoiceDictation(input));
   $("solveForm").addEventListener("submit",checkSolution);
   let lastSolveDraftSync = 0;
   let composing=false;
@@ -803,21 +873,23 @@ function openSolve() {
       lastSolveDraftSync=now;
       sendOnlineEvent("solve_draft", { draft: state.solveDraft });
     }
+    $("checkSolveBtn").disabled=!state.solveDraft.trim();
   };
-  $("solutionInput").addEventListener("compositionstart",()=>{ composing=true; });
-  $("solutionInput").addEventListener("compositionend",event=>{ composing=false; handleSolveInput(event); });
-  $("solutionInput").addEventListener("input",handleSolveInput);
-  $("solutionInput").addEventListener("change",handleSolveInput);
-  $("solutionInput").addEventListener("paste",()=>setTimeout(()=>handleSolveInput({ target:$("solutionInput") }),0));
-  autoResizeSolveInput($("solutionInput"));
+  input.addEventListener("compositionstart",()=>{ composing=true; });
+  input.addEventListener("compositionend",event=>{ composing=false; handleSolveInput(event); });
+  input.addEventListener("input",handleSolveInput);
+  input.addEventListener("change",handleSolveInput);
+  input.addEventListener("paste",()=>setTimeout(()=>handleSolveInput({ target:input }),0));
+  autoResizeSolveInput(input);
 }
 function closeModal(shouldSync=true) {
   const wasSolving = state.activity === "solving";
-  state.speechRecognition?.stop?.();
-  state.speechRecognition=null;
+  stopVoiceDictation("abort");
+  cleanupSpeechRecognition();
+  setSpeechState("idle");
   $("modalBackdrop").classList.add("hidden");
   document.body.classList.remove("keyboard-visible");
-  state.choosing=false; state.activity=""; state.solveDraft="";
+  state.choosing=false; state.activity=""; state.solveDraft=""; state.solveSubmitting=false;
   if (wasSolving) state.turnPhase="active";
   if (wasSolving) setStatus(`Turno de ${currentPlayer().name}`);
   resetTurnTimer(); render();
@@ -827,8 +899,12 @@ function closeModal(shouldSync=true) {
 function checkSolution(e) {
   e.preventDefault();
   if (!canUseTurnAction() || state.activity!=="solving") { rejectBlockedTurnAction(); return; }
+  if (state.solveSubmitting) return;
   const attempt=$("solutionInput").value;
   const cleanAttempt=attempt.trim();
+  if (!cleanAttempt) return;
+  state.solveSubmitting=true;
+  $("checkSolveBtn").disabled=true;
   const spokenAttempt=cleanAttempt || "sin respuesta";
   const correct=normalize(attempt)===normalize(currentPanel().answer);
   if (correct) {
@@ -934,6 +1010,7 @@ const {
 });
 
 bindVisibleViewport();
+bindMobileViewportGuards();
 buildWheel();
 initSharedRoom();
 document.addEventListener("pointerdown",unlockAudio,{ passive:true });

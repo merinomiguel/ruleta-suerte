@@ -302,8 +302,9 @@
 
 @media (max-width: 900px) {
   body.playing {
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
   .modal-backdrop {
     align-items: center;
@@ -362,7 +363,7 @@
   .solve-preview-board {
     min-height: 78px;
     max-height: 28dvh;
-    overflow: auto;
+    overflow: hidden;
     padding: 8px;
     column-gap: 9px;
     row-gap: 6px;
@@ -414,11 +415,12 @@
     font-size: .72rem;
   }
   #gameScreen {
-    min-height: 100vh;
-    min-height: 100dvh;
-    height: auto;
-    overflow: visible;
-    display: block;
+    min-height: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     padding: max(6px, calc(env(safe-area-inset-top) + 6px)) 8px max(12px, calc(env(safe-area-inset-bottom) + 10px));
   }
   .topbar {
@@ -458,8 +460,9 @@
     text-overflow: ellipsis;
   }
   .game-grid {
+    flex: 1 1 auto;
     min-height: 0;
-    overflow: visible;
+    overflow: hidden;
     display: grid;
     gap: 6px;
     align-items: stretch;
@@ -532,9 +535,12 @@
     border-color: rgba(255,255,255,.12);
   }
   .stage {
+    flex: 1 1 auto;
     min-height: 0;
     display: grid;
     gap: 6px;
+    align-content: start;
+    overflow: hidden;
   }
   .puzzle-panel {
     padding: 8px;
@@ -703,19 +709,19 @@
   }
   .power-track { height: 9px; }
   .actions {
-    position: sticky;
-    bottom: max(6px, env(safe-area-inset-bottom));
-    z-index: 9;
+    position: static;
+    bottom: auto;
+    z-index: auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     width: min(480px, 100%);
     margin: 0 auto;
-    padding: 5px;
+    padding: 4px;
     border: 1px solid rgba(255,255,255,.36);
     border-radius: var(--radius-md);
     background: linear-gradient(180deg, rgba(246,250,255,.95), rgba(222,233,255,.92));
-    box-shadow: 0 8px 22px rgba(8,20,64,.16), inset 0 1px 0 rgba(255,255,255,.72);
+    box-shadow: 0 6px 16px rgba(8,20,64,.13), inset 0 1px 0 rgba(255,255,255,.72);
   }
   #gameScreen.is-no-consonants .actions {
     grid-template-columns: 1fr 1fr;
@@ -762,8 +768,8 @@
   }
   .letters-used {
     min-height: 0;
-    max-height: 72px;
-    overflow: auto;
+    max-height: 46px;
+    overflow: hidden;
     margin-top: 0;
     padding: 6px 8px;
     border-radius: var(--radius-xs);
@@ -776,6 +782,7 @@
     margin: 4px 0 0;
     gap: 3px;
     font-size: .64rem;
+    overflow: hidden;
   }
   .used-letter-chip {
     min-width: 19px;
@@ -996,6 +1003,9 @@
   }
   .power-label { margin-bottom: 2px; }
   .actions { margin-top: 0; }
+  .letters-used {
+    max-height: 40px;
+  }
 }
 
 @media (max-width: 380px), (max-height: 720px) {
@@ -1071,7 +1081,7 @@
     font-size: .66rem;
   }
   .board {
-    min-height: 112px;
+    min-height: 92px;
     max-height: none;
     padding: 7px 5px;
     row-gap: 5px;
@@ -1088,7 +1098,7 @@
     width: clamp(13px, 4.3vw, 19px);
     font-size: .66rem;
   }
-  .wheel-zone { width: min(206px, 28dvh, 62vw); }
+  .wheel-zone { width: min(184px, 24.5dvh, 58vw); }
   .power-meter, .turn-timer { width: min(238px, 68vw); }
   .status {
     min-height: 38px;
@@ -1097,15 +1107,18 @@
     font-size: .72rem;
   }
   .spin-hint { font-size: .58rem; }
+  .spin-hint { display: none; }
+  .stage { gap: 4px; }
   .actions { gap: 5px; }
   .action-btn {
-    padding: 8px 6px;
+    min-height: 44px;
+    padding: 7px 6px;
     font-size: .62rem;
   }
   .letters-used {
-    min-height: 24px;
-    max-height: 58px;
-    padding-block: 5px;
+    min-height: 21px;
+    max-height: 21px;
+    padding-block: 3px;
   }
   .used-letter-chip {
     min-width: 17px;
