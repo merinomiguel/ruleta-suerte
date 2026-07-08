@@ -354,12 +354,26 @@
     height: 38%;
     border-radius: 3px;
   }
-  .solve-modal input {
+  .solve-modal input,
+  .solve-modal textarea {
     min-height: 42px;
     margin: 4px 0 8px;
     padding: 11px 12px;
     border-radius: 12px;
     font-size: 1rem;
+  }
+  .solve-input-wrap {
+    margin: 4px 0 8px;
+    gap: 6px;
+  }
+  .solve-input-wrap textarea {
+    margin: 0;
+  }
+  .dictate-btn {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    border-radius: 12px;
   }
   .solve-modal .modal-actions {
     gap: 7px;
@@ -463,6 +477,15 @@
     line-height: 1.05;
   }
   .wildcard { display: none; }
+  .wildcard.owned {
+    display: inline-grid;
+    width: fit-content;
+    margin-top: 5px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    font-size: .52rem;
+    line-height: 1;
+  }
   .stage {
     min-height: 0;
     display: grid;
@@ -631,11 +654,17 @@
   }
   .power-track { height: 9px; }
   .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 7px;
-    flex-wrap: nowrap;
+  }
+  #gameScreen.is-no-consonants .actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  #gameScreen.is-no-consonants .action-btn.pass-turn {
+    grid-column: 1 / -1;
   }
   .action-btn {
-    flex: 1 1 0;
     min-width: 0;
     padding: 10px 8px;
     border-radius: var(--radius-sm);
@@ -644,18 +673,18 @@
   }
   .letters-used {
     min-height: 0;
-    max-height: none;
-    overflow: hidden;
+    max-height: 72px;
+    overflow: auto;
     margin-top: 0;
     padding: 7px 9px;
     border-radius: var(--radius-xs);
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: normal;
     box-shadow: none;
   }
   .letters-used > span:first-child { font-size: .52rem; }
   #usedLetters {
-    margin-left: 5px;
+    display: flex;
+    margin: 4px 0 0;
     gap: 3px;
     font-size: .64rem;
   }
@@ -828,7 +857,8 @@
     width: clamp(14px, 4.6vw, 21px);
     font-size: clamp(.58rem, 3vw, .78rem);
   }
-  .solve-modal input {
+  .solve-modal input,
+  .solve-modal textarea {
     min-height: 39px;
     margin-bottom: 6px;
   }
@@ -963,7 +993,7 @@
   }
   .letters-used {
     min-height: 24px;
-    max-height: 27px;
+    max-height: 58px;
     padding-block: 5px;
   }
   .used-letter-chip {

@@ -148,7 +148,7 @@
 .wheel-result.spinning,
 .wheel-result.charging {
   color: #ffffff;
-  background: linear-gradient(135deg, var(--primary), var(--bonus));
+  background: linear-gradient(135deg, var(--primary), var(--comodin));
   border-color: rgba(255,255,255,.34);
 }
 .wheel-result.result {
@@ -236,11 +236,29 @@
     linear-gradient(135deg, #058b70, var(--accent));
   box-shadow: 0 10px 0 rgba(1,78,60,.18), 0 18px 28px rgba(6,151,117,.3);
 }
+.action-btn.pass-turn {
+  display: none;
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16), transparent 42%),
+    linear-gradient(135deg, #e64264, #b9153b);
+  box-shadow: 0 9px 0 rgba(105,0,30,.18), 0 16px 26px rgba(255,92,122,.24);
+}
 #gameScreen.is-waiting-spin .action-btn.resolve {
   color: #52608a;
   background: rgba(239,244,255,.84);
   border: 1px solid rgba(31,48,105,.14);
   box-shadow: none;
+}
+#gameScreen.is-no-consonants .action-btn.resolve {
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), transparent 42%),
+    linear-gradient(135deg, #058b70, var(--accent));
+  box-shadow: 0 10px 0 rgba(1,78,60,.18), 0 18px 28px rgba(6,151,117,.3);
+}
+#gameScreen.is-no-consonants .action-btn.pass-turn {
+  display: inline-flex;
 }
 #gameScreen.is-solving .action-btn.resolve {
   color: #ffffff;

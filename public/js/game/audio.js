@@ -2,14 +2,28 @@ let audioContext = null;
 let soundEnabled = true;
 
 export function ensureAudio() {
-  if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioContext.state === "suspended") audioContext.resume();
+  if (!soundEnabled) return null;
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return null;
+  if (!audioContext) audioContext = new AudioCtor();
+  if (audioContext.state === "suspended") audioContext.resume().catch?.(()=>{});
   return audioContext;
+}
+
+export function unlockAudio() {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const buffer = ctx.createBuffer(1, 1, 22050);
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(ctx.destination);
+  try { source.start(0); } catch (_) {}
 }
 
 function tone(frequency, duration = .1, type = "sine", volume = .05, delay = 0) {
   if (!soundEnabled) return;
   const ctx = ensureAudio();
+  if (!ctx) return;
   const oscillator = ctx.createOscillator();
   const gain = ctx.createGain();
   const start = ctx.currentTime + delay;
@@ -32,6 +46,9 @@ export function sfx(name) {
   if (name === "bankrupt") { tone(130, .38, "square", .07); tone(82, .5, "sawtooth", .06, .18); }
   if (name === "round") { [523, 659, 784, 1047].forEach((f, i) => tone(f, .28, "sine", .055, i * .1)); }
   if (name === "win") { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .38, "triangle", .06, i * .11)); }
+  if (name === "turn") { tone(440, .12, "triangle", .055); tone(660, .16, "triangle", .052, .12); }
+  if (name === "timeWarning") tone(720, .07, "sine", .04);
+  if (name === "timeCritical") { tone(880, .055, "square", .038); tone(660, .045, "square", .026, .065); }
 }
 
 export function toggleSound($) {
@@ -39,7 +56,11 @@ export function toggleSound($) {
   $("soundBtn").textContent = soundEnabled ? "🔊" : "🔇";
   $("soundBtn").setAttribute("aria-label", soundEnabled ? "Silenciar sonidos" : "Activar sonidos");
   if (soundEnabled) {
-    ensureAudio();
+    unlockAudio();
     sfx("good");
   }
 }
+
+["pointerdown","touchstart","keydown"].forEach(eventName=>{
+  window.addEventListener(eventName, unlockAudio, { once:true, passive:true });
+});

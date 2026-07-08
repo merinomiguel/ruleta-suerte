@@ -2,6 +2,7 @@ export const TOTAL_ROUNDS = 5;
 export const JACKPOT_ROUND = TOTAL_ROUNDS - 1;
 export const MAX_PLAYERS = 4;
 export const TURN_SECONDS = 30;
+export const SHORT_TURN_SECONDS = 20;
 // Orden visual desde las doce, siguiendo el sentido antihorario del programa.
 export const WEDGES = [
   { type:"money", label:"100", value:100, color:"#46b9e8" },
@@ -9,7 +10,7 @@ export const WEDGES = [
   { type:"bankrupt", label:"QUIEBRA", color:"#111318" },
   { type:"x2", label:"X2", color:"#176c43" },
   { type:"money", label:"100", value:100, color:"#d94343" },
-  { type:"money", label:"50", value:50, color:"#46b9e8" },
+  { type:"lose", label:"PIERDE", color:"#f4f4ef", dark:true },
   { type:"money", label:"100", value:100, color:"#e4c728", dark:true },
   { type:"money", label:"100", value:100, color:"#7650a5" },
   { type:"lose", label:"PIERDE", color:"#f4f4ef", dark:true },
@@ -21,7 +22,7 @@ export const WEDGES = [
   { type:"half", label:"½", color:"#d94343" },
   { type:"money", label:"100", value:100, color:"#e67d2e" },
   { type:"money", label:"50", value:50, color:"#46b9e8" },
-  { type:"money", label:"100", value:100, color:"#8dcc32" },
+  { type:"bankrupt", label:"QUIEBRA", color:"#111318" },
   { type:"money", label:"150", value:150, color:"#e4c728", dark:true },
   { type:"money", label:"100", value:100, color:"#7650a5" },
   { type:"wildcard", label:"COMODÍN", value:100, color:"#d9a514", dark:true },

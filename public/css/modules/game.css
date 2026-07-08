@@ -503,7 +503,7 @@
 @keyframes loseTurnFlash {
   45% { border-color: rgba(255,184,77,.62); box-shadow: 0 16px 34px rgba(255,184,77,.18); }
 }
-@keyframes bonusPulse {
+@keyframes comodinPulse {
   0% { transform: scale(1); }
   42% { transform: scale(1.026); filter: brightness(1.06); box-shadow: 0 18px 38px rgba(169,112,255,.18); }
   100% { transform: scale(1); }
@@ -534,10 +534,10 @@
 .player-card.feedback-negative { animation: playerBadPulse .5s ease; }
 .player-card.is-bankrupt { animation: bankruptFlash .58s ease; }
 .player-card.is-lose-turn { animation: loseTurnFlash .48s ease; }
-.player-card.bonus-earned, .wildcard.bonus-earned { animation: bonusPulse .58s ease; }
+.player-card.comodin-earned, .wildcard.comodin-earned { animation: comodinPulse .58s ease; }
 .money.money-bump { animation: moneyBump .48s ease; }
 .money.money-lost { animation: moneyLost .52s ease; }
-.jackpot.bump { animation: bonusPulse .5s ease; }
+.jackpot.bump { animation: comodinPulse .5s ease; }
 .board.shake { animation: boardShake .48s ease; }
 .board.miss-shake { animation: boardMiss .38s ease; }
 .board.panel-complete { animation: panelComplete .62s ease; }

@@ -68,7 +68,7 @@
 }
 #gameScreen.is-buying-vowel .key.vowel {
   color: white;
-  background: linear-gradient(135deg, var(--bonus), var(--primary-2));
+  background: linear-gradient(135deg, var(--comodin), var(--primary-2));
 }
 .modal-backdrop {
   position: fixed;
@@ -128,12 +128,54 @@ body.keyboard-visible .solve-modal {
   line-height: 1.55;
 }
 .modal strong { color: var(--ink-strong); }
-.modal input {
+.modal input,
+.modal textarea {
   margin: 8px 0 13px;
   text-transform: uppercase;
   border-radius: 16px;
   background: white;
   box-shadow: inset 0 2px 0 rgba(9,21,58,.06), 0 6px 0 rgba(15,40,120,.08);
+}
+.modal textarea {
+  min-height: 62px;
+  max-height: 138px;
+  resize: none;
+  line-height: 1.28;
+  overflow: auto;
+}
+.turn-ready-modal {
+  width: min(460px, 100%);
+  border-color: rgba(255,209,102,.46);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,246,216,.94));
+}
+.solve-input-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  margin: 8px 0 13px;
+}
+.solve-input-wrap textarea {
+  margin: 0;
+}
+.dictate-btn {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(38,88,246,.22);
+  border-radius: 14px;
+  color: #1737b8;
+  background: linear-gradient(180deg, #ffffff, #dfe9ff);
+  box-shadow: 0 6px 0 rgba(15,40,120,.1), 0 12px 18px rgba(14,28,76,.12);
+  font-size: 1.08rem;
+}
+.dictate-btn:hover:not(:disabled) {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
 }
 .solve-context {
   display: grid;

@@ -1,4 +1,4 @@
-import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js";
+import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js?v=mobile-ux-1";
 import { getPlayerToken, rememberOnlineSeat, rememberedPlayerToken, rememberedRoomCode, safeStorageGet, safeStorageRemove, safeStorageSet } from "./storage.js";
 
 export function createOnlineController(ctx) {
@@ -6,7 +6,7 @@ export function createOnlineController(ctx) {
     $, state, online, addHistory, buildWheel, chooseConsonant, chooseVowel,
     currentPlayer, hideChoices, render, renderHistory, resetTurnTimer, setStatus,
     showChoices, showFinal, showGameScreen, showStartScreen, stopTurnTimer,
-    updatePowerMeter, updateTimerDisplay, ensureTimerLoop
+    updatePowerMeter, updateTimerDisplay, ensureTimerLoop, showTurnReadyModal
   } = ctx;
 
   function setOnlineStatus(text,type="") {
@@ -391,15 +391,17 @@ export function createOnlineController(ctx) {
     state.charging=false;
     state.spinning=false;
     state.activity="";
+    state.turnAwaitingAck=true;
     state.charge=0;
     updatePowerMeter(0);
     $("choicePanel").classList.add("hidden");
     $("keyboard").innerHTML="";
     $("modalBackdrop").classList.add("hidden");
     addHistory(`Turno recuperado para ${currentPlayer().name}`,"turn");
-    resetTurnTimer();
+    stopTurnTimer();
     setStatus(`Turno recuperado para ${currentPlayer().name}.`,reason==="peer_left"?"bad":"spin-result");
     render();
+    if (onlineCanAct()) showTurnReadyModal();
     syncOnline("recover_turn");
     return true;
   }
@@ -413,7 +415,8 @@ export function createOnlineController(ctx) {
       jackpotClaimedAmount: state.jackpotClaimedAmount, choiceMode: state.choiceMode,
       statusText: state.statusText, statusType: state.statusType, screen: state.screen,
       history: state.history, timerDeadline: state.timerDeadline, timerRemaining: state.timerRemaining,
-      activity: state.activity, solveDraft: state.solveDraft
+      activity: state.activity, solveDraft: state.solveDraft,
+      turnAwaitingAck: state.turnAwaitingAck, turnSeconds: state.turnSeconds, shortRound: state.shortRound
     };
   }
   function sendOnlineEvent(type,payload={}) {
@@ -511,18 +514,25 @@ export function createOnlineController(ctx) {
     state.choiceMode=snapshot.choiceMode||""; state.statusText=snapshot.statusText||""; state.statusType=snapshot.statusType||""; state.screen=snapshot.screen||"game";
     state.history=snapshot.history||[];
     state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||TURN_SECONDS; state.activity=snapshot.activity||""; state.solveDraft=snapshot.solveDraft||"";
+    state.turnAwaitingAck=Boolean(snapshot.turnAwaitingAck);
+    state.turnSeconds=snapshot.turnSeconds||TURN_SECONDS;
+    state.shortRound=Boolean(snapshot.shortRound);
     state.spinning=false; state.charging=false; state.choosing=false; state.charge=0; updatePowerMeter(0); $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML="";
     ensureTimerLoop(); updateTimerDisplay();
     $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
     $("modalBackdrop").classList.add("hidden");
     if (state.screen==="final") showFinal(false);
-    else { showGameScreen(); render(); setStatus(state.statusText,state.statusType); renderHistory(); }
+    else { showGameScreen(); render(); setStatus(state.statusText,state.statusType); renderHistory(); if (state.turnAwaitingAck && onlineCanAct()) showTurnReadyModal(); }
     const restored=restorePendingActionAfterReconnect();
     online.applyingRemote=false;
     if (restored) syncOnline("restore_turn");
   }
   function restorePendingActionAfterReconnect() {
     if (!online.enabled || !onlineCanAct() || state.screen!=="game" || state.finished) return false;
+    if (state.turnAwaitingAck) {
+      showTurnReadyModal();
+      return false;
+    }
     if (state.choiceMode==="vowel") {
       showChoices(VOWELS.filter(l=>!state.used.has(l)),"COMPRA UNA VOCAL · COSTE 50 €",chooseVowel,"vowel",{ sync:false });
       setStatus(state.statusText||"Compra una vocal.","spin-result");

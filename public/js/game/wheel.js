@@ -1,4 +1,4 @@
-import { JACKPOT_ROUND, WEDGES } from "./config.js";
+import { JACKPOT_ROUND, WEDGES } from "./config.js?v=mobile-ux-1";
 
 function polar(cx, cy, r, angle) {
   const rad = (angle - 90) * Math.PI / 180;
@@ -24,7 +24,7 @@ const SPECIAL_COLORS = {
 function getWheelDisplay(wedge, index) {
   const special = SPECIAL_COLORS[wedge.type];
   if (special) {
-    const label = wedge.type === "half" ? "MITAD" : wedge.type === "wildcard" ? "BONUS" : wedge.label;
+    const label = wedge.type === "half" ? "MITAD" : wedge.type === "wildcard" ? "COMODÍN" : wedge.label;
     return {
       label,
       lines: [label],
