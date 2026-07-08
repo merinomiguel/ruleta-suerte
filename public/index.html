@@ -9,7 +9,7 @@
   <meta name="color-scheme" content="light">
   <title>La Ruleta de la Suerte</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f7cff'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23ffd166'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2354f0c2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/css/styles.css?v=mobile-ux-2">
+  <link rel="stylesheet" href="/css/styles.css?v=mobile-ux-3">
 </head>
 <body>
   <main>
@@ -149,8 +149,8 @@
               <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
               <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
             </div>
-            <div id="wheelResult" class="wheel-result" aria-live="polite">Lista para girar</div>
-            <div id="spinHint" class="spin-hint">Mantén pulsado y suelta para girar</div>
+            <div id="wheelResult" class="wheel-result" aria-live="polite">Mantén para girar</div>
+            <div id="spinHint" class="spin-hint hidden" aria-hidden="true"></div>
             <div class="power-meter" aria-label="Fuerza del giro">
               <div class="power-label"><span>Fuerza</span><span id="powerValue">Mantén pulsado</span></div>
               <div id="forceBar" class="power-track"><div id="forceFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
@@ -185,6 +185,6 @@
   <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
 
-  <script type="module" src="/js/game/app.js?v=mobile-ux-2"></script>
+  <script type="module" src="/js/game/app.js?v=mobile-ux-4"></script>
 </body>
 </html>

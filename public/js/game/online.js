@@ -1,4 +1,4 @@
-import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js?v=mobile-ux-2";
+import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js?v=mobile-ux-4";
 import { getPlayerToken, rememberOnlineSeat, rememberedRoomCode, safeStorageGet, safeStorageRemove, safeStorageSet } from "./storage.js";
 
 export function createOnlineController(ctx) {

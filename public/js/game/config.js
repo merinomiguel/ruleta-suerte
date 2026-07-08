@@ -12,23 +12,23 @@ export const WEDGES = [
   { type:"money", label:"100", value:100, color:"#d94343" },
   { type:"money", label:"200", value:200, color:"#46b9e8" },
   { type:"bankrupt", label:"QUIEBRA", color:"#111318" },
-  { type:"money", label:"100", value:100, color:"#7650a5" },
+  { type:"money", label:"150", value:150, color:"#7650a5" },
   { type:"x2", label:"X2", color:"#176c43" },
-  { type:"money", label:"150", value:150, color:"#e67d2e" },
+  { type:"money", label:"100", value:100, color:"#e67d2e" },
   { type:"money", label:"50", value:50, color:"#8dcc32" },
   { type:"wildcard", label:"COMODÍN", value:100, color:"#d9a514", dark:true },
-  { type:"money", label:"100", value:100, color:"#e4c728", dark:true },
-  { type:"bankrupt", label:"QUIEBRA", color:"#111318" },
+  { type:"money", label:"150", value:150, color:"#e4c728", dark:true },
+  { type:"money", label:"100", value:100, color:"#46b9e8" },
   { type:"money", label:"200", value:200, color:"#7650a5" },
-  { type:"money", label:"100", value:100, color:"#e67d2e" },
   { type:"lose", label:"PIERDE", color:"#f4f4ef", dark:true },
-  { type:"money", label:"150", value:150, color:"#8dcc32" },
   { type:"money", label:"50", value:50, color:"#46b9e8" },
-  { type:"half", label:"½", color:"#d94343" },
+  { type:"money", label:"100", value:100, color:"#d94343" },
+  { type:"half", label:"MITAD", color:"#d94343" },
+  { type:"money", label:"150", value:150, color:"#8dcc32" },
   { type:"money", label:"100", value:100, color:"#7650a5" },
   { type:"bankrupt", label:"QUIEBRA", color:"#111318" },
-  { type:"money", label:"150", value:150, color:"#e4c728", dark:true },
-  { type:"lose", label:"PIERDE", color:"#f4f4ef", dark:true }
+  { type:"money", label:"200", value:200, color:"#e4c728", dark:true },
+  { type:"money", label:"100", value:100, color:"#e67d2e" }
 ];
 export const LETTERS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
 export const VOWELS = ["A","E","I","O","U"];

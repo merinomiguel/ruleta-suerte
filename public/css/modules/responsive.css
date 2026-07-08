@@ -685,11 +685,13 @@
   .wheel-center small { font-size: .38rem; }
   .wheel-result {
     max-width: min(285px, 80vw);
-    min-height: 24px;
-    padding: 4px 11px;
+    min-height: 32px;
+    margin: -2px auto 0;
+    padding: 6px 12px;
     font-size: .68rem;
   }
   .spin-hint {
+    display: none;
     margin: 0;
     font-size: .64rem;
     line-height: 1.2;
@@ -994,8 +996,8 @@
   }
   .wheel-zone { width: min(218px, 28dvh, 62vw); }
   .wheel-result {
-    min-height: 23px;
-    padding-block: 4px;
+    min-height: 31px;
+    padding-block: 5px;
   }
   .power-meter {
     margin-bottom: 2px;
@@ -1106,8 +1108,7 @@
     padding: 8px;
     font-size: .72rem;
   }
-  .spin-hint { font-size: .58rem; }
-  .spin-hint { display: none; }
+  .spin-hint { display: none; font-size: .58rem; }
   .stage { gap: 4px; }
   .actions { gap: 5px; }
   .action-btn {
