@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#c8d8ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="color-scheme" content="light">
+  <title>La Ruleta de la Suerte</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f7cff'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23ffd166'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2354f0c2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/styles.css?v=visual-9-1">
+</head>
+<body>
+  <main>
+    <section id="startScreen" class="screen">
+      <div class="start-shell">
+        <header class="start-hero">
+          <p class="eyebrow">El concurso en casa</p>
+          <h1>LA RULETA <span>DE LA SUERTE</span></h1>
+          <p class="tagline">Crea una sala, comparte el código y juega desde casa.</p>
+        </header>
+        <div class="start-card">
+          <div class="identity-card">
+            <label>Tu nombre<input id="onlineName" maxlength="16" value="Jugador" autocomplete="off"></label>
+          </div>
+
+          <div class="online-card">
+            <div class="section-heading">
+              <p class="section-kicker">Jugar online</p>
+              <p class="section-copy">Crea una sala o entra con un código.</p>
+            </div>
+            <div id="lobbyPanel" class="lobby-panel hidden" aria-label="Jugadores en la sala"></div>
+            <div id="onlineTools" class="online-tools hidden">
+              <button id="copyCodeBtn" class="copy-btn" type="button">Copiar código</button>
+              <button id="copyLinkBtn" class="copy-btn" type="button">Compartir enlace</button>
+              <button id="leaveRoomBtn" class="copy-btn leave-room-btn" type="button">Volver</button>
+            </div>
+            <button id="onlineStartBtn" class="primary-btn online-start hidden" type="button">Empezar sala online →</button>
+            <div id="onlineStatus" class="online-status"></div>
+            <div class="online-actions">
+              <article class="online-action-card create-room-card">
+                <div>
+                  <h3>Crear sala</h3>
+                  <p>Comparte el código con tus jugadores.</p>
+                </div>
+                <button id="createRoomBtn" class="primary-btn" type="button">Crear sala</button>
+              </article>
+              <article class="online-action-card join-room-card">
+                <div>
+                  <h3>Entrar con código</h3>
+                  <p>Únete a una sala creada.</p>
+                </div>
+                <div class="online-row">
+                  <label>Código<input id="roomCodeInput" class="room-code-input" maxlength="6" placeholder="ABCD" autocomplete="off"></label>
+                  <button id="joinRoomBtn" class="primary-btn" type="button">Entrar</button>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="mode-divider">Alternativa</div>
+          <button id="showLocalBtn" class="primary-btn local-toggle" type="button">Jugar en este dispositivo</button>
+          <div id="localSetup" class="local-card hidden">
+            <div class="section-heading">
+              <p class="section-kicker">Partida local</p>
+              <p class="section-copy">Todos juegan en la misma pantalla.</p>
+            </div>
+            <form id="startForm">
+              <div class="name-grid">
+                <label>Jugador 1<input id="name1" maxlength="16" value="Jugador 1" required autocomplete="off"></label>
+                <label>Jugador 2<input id="name2" maxlength="16" value="Jugador 2" required autocomplete="off"></label>
+                <label class="optional-player">Jugador 3 · opcional<input id="name3" maxlength="16" placeholder="Jugador 3" autocomplete="off"></label>
+                <label class="optional-player">Jugador 4 · opcional<input id="name4" maxlength="16" placeholder="Jugador 4" autocomplete="off"></label>
+              </div>
+              <button class="primary-btn" type="submit">Empezar partida local →</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen hidden">
+      <header class="topbar">
+        <div class="mini-logo">LA RULETA <span>DE LA SUERTE</span></div>
+        <div class="top-actions"><button id="soundBtn" class="sound-btn" aria-label="Silenciar sonidos" title="Activar o silenciar sonidos">🔊</button><button id="exitGameBtn" class="sound-btn exit-game-btn" type="button" aria-label="Salir de la partida" title="Salir de la partida">×</button><div id="roomLabel" class="round-pill connection-pill hidden"></div><div id="roundLabel" class="round-pill">Panel 1/5</div></div>
+      </header>
+      <div class="game-grid">
+        <section id="playersPanel" class="players-panel" aria-label="Jugadores">
+          <aside id="playerCard0" class="player-card">
+            <div class="player-tag">Jugador 1</div><h2 id="playerName0">Jugador 1</h2>
+            <div class="money-block"><small>Panel</small><div id="roundMoney0" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney0" class="money total">0 €</div></div>
+            <div id="wildcard0" class="wildcard">◇ SIN COMODÍN</div>
+          </aside>
+          <aside id="playerCard1" class="player-card">
+            <div class="player-tag">Jugador 2</div><h2 id="playerName1">Jugador 2</h2>
+            <div class="money-block"><small>Panel</small><div id="roundMoney1" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney1" class="money total">0 €</div></div>
+            <div id="wildcard1" class="wildcard">◇ SIN COMODÍN</div>
+          </aside>
+          <aside id="playerCard2" class="player-card hidden">
+            <div class="player-tag">Jugador 3</div><h2 id="playerName2">Jugador 3</h2>
+            <div class="money-block"><small>Panel</small><div id="roundMoney2" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney2" class="money total">0 €</div></div>
+            <div id="wildcard2" class="wildcard">◇ SIN COMODÍN</div>
+          </aside>
+          <aside id="playerCard3" class="player-card hidden">
+            <div class="player-tag">Jugador 4</div><h2 id="playerName3">Jugador 4</h2>
+            <div class="money-block"><small>Panel</small><div id="roundMoney3" class="money">0 €</div></div>
+            <div class="money-block"><small>Total</small><div id="totalMoney3" class="money total">0 €</div></div>
+            <div id="wildcard3" class="wildcard">◇ SIN COMODÍN</div>
+          </aside>
+        </section>
+
+        <section class="stage">
+          <div class="puzzle-panel">
+            <div class="clue-wrap">
+              <div class="clue-label"><span>Categoría: <strong id="category">Categoría</strong></span><span>Dificultad: <strong id="difficulty">Dificultad</strong></span><span id="prizePill" class="prize-pill hidden"></span></div>
+              <h2 id="clue"></h2>
+            </div>
+            <div id="jackpot" class="jackpot hidden">🎯 BOTE: 1.000 €</div>
+            <div id="jackpotRule" class="jackpot-rule"></div>
+            <div id="board" class="board" aria-label="Panel de frase"></div>
+          </div>
+          <div class="turn-panel">
+            <div id="status" class="status" role="status" aria-live="polite">Todo listo. ¡Gira la ruleta!</div>
+            <div id="remoteBanner" class="remote-banner hidden" aria-live="polite"></div>
+            <div id="turnTimer" class="turn-timer" aria-label="Temporizador de turno">
+              <span id="timerLabel">TURNO</span>
+              <div class="timer-track"><div id="timerFill" class="timer-fill"></div></div>
+              <strong id="timerValue">30s</strong>
+            </div>
+          </div>
+          <div class="spin-panel">
+            <div class="wheel-zone">
+              <div class="pointer" aria-hidden="true"></div>
+              <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
+              <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
+            </div>
+            <div id="wheelResult" class="wheel-result" aria-live="polite">Ruleta lista</div>
+            <div id="spinHint" class="spin-hint">Mantén pulsada la ruleta para girar</div>
+            <div class="power-meter" aria-label="Fuerza del giro">
+              <div class="power-label"><span>Fuerza</span><span id="powerValue">Mantén pulsado</span></div>
+              <div id="forceBar" class="power-track"><div id="forceFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="vowelBtn" class="action-btn secondary">COMPRAR VOCAL · 50 €</button>
+            <button id="solveBtn" class="action-btn resolve">RESOLVER PANEL</button>
+          </div>
+          <div id="choicePanel" class="choice-panel hidden"><p id="choiceTitle"></p><div id="keyboard" class="keyboard"></div></div>
+          <div class="letters-used"><span>Letras usadas</span><span id="usedLetters">—</span></div>
+        </section>
+        <aside id="matchLog" class="match-log" aria-label="Historial de partida">
+          <h3>Historial</h3>
+          <div id="logList" class="log-list"></div>
+          <div id="logEmpty" class="log-empty">Las acciones aparecerán aquí.</div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="finalScreen" class="screen hidden"><div class="final-card">
+      <div class="trophy">🏆</div><p class="eyebrow">FIN DE LA PARTIDA</p>
+      <h2 id="winnerName"></h2><div id="winnerScore" class="final-score"></div>
+      <p id="finalMessage"></p><div id="finalScores" class="score-list"></div>
+      <div id="roundResults" class="round-results"></div>
+      <button id="restartBtn" class="primary-btn">JUGAR OTRA VEZ</button>
+    </div></section>
+  </main>
+
+  <div id="modalBackdrop" class="modal-backdrop hidden"><div id="modal" class="modal" role="dialog" aria-modal="true"></div></div>
+  <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+
+  <script type="module" src="/js/game/app.js?v=visual-9-1"></script>
+</body>
+</html>

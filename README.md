@@ -28,7 +28,8 @@ El reto fue evolucionarlo de una experiencia local a una partida online sincroni
 - controlar turnos y acciones en tiempo real;
 - mantener una interfaz responsive;
 - permitir reconexión si alguien recarga o se cae;
-- conservar una experiencia rápida, sin frameworks ni build step.
+- conservar una experiencia rápida, sin frameworks ni build step;
+- mantener el código separado por responsabilidad para que sea fácil de ampliar.
 
 ## Stack
 
@@ -65,7 +66,7 @@ El reto fue evolucionarlo de una experiencia local a una partida online sincroni
 
 ### 1. Una aplicación ligera y sin framework
 
-El juego está construido en un único `index.html` con CSS y JavaScript embebidos. Para este proyecto tenía sentido priorizar velocidad de desarrollo, despliegue sencillo y cero tooling frontend.
+El juego usa HTML, CSS y JavaScript vanilla servidos como archivos estáticos desde `public/`. No requiere bundler ni paso de compilación, pero mantiene separadas la estructura, los estilos, la lógica de cliente y el banco de paneles.
 
 Ventajas:
 
@@ -86,9 +87,9 @@ Cada navegador genera o reutiliza un `playerToken` guardado en `localStorage`.
 
 Esto permite que, si un jugador recarga la página o pierde conexión, pueda volver a ocupar su misma plaza en la sala. Si la partida ya empezó, el servidor no permite entrar a jugadores nuevos, solo reconectar a plazas existentes.
 
-### 4. Servidor como gestor de sala
+### 4. Servidor modular como gestor de sala
 
-El servidor se encarga de:
+El backend separa el servidor estático, la gestión de salas y la capa WebSocket. Se encarga de:
 
 - crear salas;
 - asignar plazas;
@@ -110,8 +111,38 @@ El giro funciona manteniendo pulsada la ruleta para cargar fuerza. La fuerza det
 
 ```text
 .
-├── index.html        # Interfaz, estilos, lógica del juego y paneles
-├── server.js         # Servidor HTTP + WebSocket + salas online
+├── public
+│   ├── index.html              # Estructura HTML de la interfaz
+│   ├── css
+│   │   ├── styles.css          # Índice de estilos
+│   │   └── modules
+│   │       ├── base.css        # Variables, reset y base visual
+│   │       ├── start.css       # Portada, lobby y formulario local
+│   │       ├── game.css        # Tablero, jugadores y estado de partida
+│   │       ├── wheel.css       # Ruleta y controles de giro
+│   │       ├── dialogs.css     # Modales, teclado y final
+│   │       └── responsive.css  # Adaptación móvil y modo plató
+│   └── js
+│       ├── data
+│       │   └── panels.js       # Banco de paneles
+│       └── game
+│           ├── app.js          # Flujo principal de partida
+│           ├── audio.js        # Sonidos Web Audio
+│           ├── config.js       # Constantes de juego y ruleta
+│           ├── dom.js          # Accesos DOM compartidos
+│           ├── effects.js      # Animaciones puntuales y confeti
+│           ├── format.js       # Normalización y formato de dinero
+│           ├── history.js      # Historial de acciones
+│           ├── online.js       # Lobby, WebSocket y reconexión
+│           ├── panels.js       # Selección progresiva de paneles
+│           ├── storage.js      # LocalStorage y tokens
+│           └── wheel.js        # Construcción SVG de la ruleta
+├── src
+│   └── server
+│       ├── realtime.js         # WebSocket y sincronización online
+│       ├── rooms.js            # Estado y utilidades de salas
+│       └── static-server.js    # Servidor HTTP de archivos estáticos
+├── server.js                   # Punto de entrada Node
 ├── package.json      # Scripts y dependencias
 ├── package-lock.json
 └── README.md
@@ -177,7 +208,7 @@ const PORT = process.env.PORT || 3000;
 - El servidor gestiona salas y reconexión, pero no valida todas las reglas del juego acción por acción.
 - La sincronización se basa en snapshots, suficiente para uso casual pero no anti-trampas.
 - No hay persistencia en base de datos: si el servidor se reinicia, las salas se pierden.
-- Los paneles están embebidos en el HTML.
+- Los paneles viven en un módulo JavaScript estático; no hay base de datos externa.
 
 ## Próximas mejoras
 
@@ -192,4 +223,3 @@ const PORT = process.env.PORT || 3000;
 ## Autor
 
 Proyecto desarrollado por Miguel como ejercicio de producto, frontend interactivo y juego online en tiempo real para portfolio.
-
