@@ -7,7 +7,7 @@ import { createEffects } from "./effects.js?v=mobile-perf-1";
 import { normalize, money } from "./format.js";
 import { createHistory } from "./history.js";
 import { selectProgressivePanels } from "./panels.js?v=board-resolve-4";
-import { createOnlineController } from "./online.js?v=mobile-ux-9";
+import { createOnlineController } from "./online.js?v=mobile-ux-10";
 import { createWheel } from "./wheel.js?v=mobile-ux-7";
 
 const state = {
@@ -119,14 +119,18 @@ function timerLoop() {
   if (timerShouldRun() && state.timerRemaining<=0 && (!online.enabled || onlineCanAct())) handleTurnTimeout();
   state.timerFrame=setTimeout(timerLoop,250);
 }
-function ensureTimerLoop() {
+function ensureTimerLoop(force=false) {
+  if (force && state.timerFrame) {
+    clearTimeout(state.timerFrame);
+    state.timerFrame=0;
+  }
   if (!state.timerFrame) state.timerFrame=setTimeout(timerLoop,250);
 }
 function resetTurnTimer() {
   state.timerDeadline=Date.now()+state.turnSeconds*1000;
   state.timerRemaining=state.turnSeconds;
   state.lastWarningSecond=0;
-  ensureTimerLoop();
+  ensureTimerLoop(true);
   updateTimerDisplay();
 }
 function stopTurnTimer() {

@@ -549,9 +549,9 @@ export function createOnlineController(ctx) {
     state.choiceMode=snapshot.choiceMode||""; state.statusText=snapshot.statusText||""; state.statusType=snapshot.statusType||""; state.screen=snapshot.screen||"game";
     state.history=snapshot.history||[];
     state.lastEvent=snapshot.lastEvent||null;
-    state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||TURN_SECONDS; state.activity=snapshot.activity||""; state.solveDraft=snapshot.solveDraft||"";
-    state.turnAwaitingAck=Boolean(snapshot.turnAwaitingAck);
     state.turnSeconds=snapshot.turnSeconds||TURN_SECONDS;
+    state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||state.turnSeconds; state.activity=snapshot.activity||""; state.solveDraft=snapshot.solveDraft||"";
+    state.turnAwaitingAck=Boolean(snapshot.turnAwaitingAck);
     state.shortRound=Boolean(snapshot.shortRound);
     state.turnId=Number(snapshot.turnId)||0;
     state.turnAcceptedAt=Number(snapshot.turnAcceptedAt)||0;
@@ -559,7 +559,7 @@ export function createOnlineController(ctx) {
     state.turnAcceptedBy=Number.isFinite(acceptedBy) ? acceptedBy : -1;
     state.turnPhase=snapshot.turnPhase || (state.turnAwaitingAck ? "waiting_ack" : "active");
     state.spinning=false; state.charging=false; state.choosing=false; state.charge=0; updatePowerMeter(0); $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML="";
-    ensureTimerLoop(); updateTimerDisplay();
+    ensureTimerLoop(true); updateTimerDisplay();
     $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
     $("modalBackdrop").classList.add("hidden");
     if (state.screen==="final") showFinal(false);
