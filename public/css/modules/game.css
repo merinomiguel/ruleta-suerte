@@ -525,22 +525,48 @@
   z-index: 2;
   align-self: end;
   min-height: 70px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  padding-block: 10px;
   border-color: transparent;
   background: transparent;
   box-shadow: none;
+  font-size: .82rem;
+  font-weight: 1000;
+  line-height: .98;
+  letter-spacing: .035em;
+  text-align: center;
+  text-wrap: balance;
   transform: translateY(-4px);
 }
 .wheel-action-row > .action-btn::after { display: none; }
+.wheel-action-row > .action-btn .label-short { display: none; }
+.wheel-action-row > .action-btn .label-full,
+.wheel-action-row > .action-btn .label-short {
+  white-space: normal;
+}
+.wheel-action-row > .action-btn small {
+  display: block;
+  color: currentColor;
+  font-size: .72em;
+  font-weight: 950;
+  letter-spacing: .08em;
+  opacity: .86;
+}
 #vowelBtn {
   margin-right: -16px;
-  padding-right: 28px;
-  color: #6a7598;
+  padding-left: 22px;
+  padding-right: 42px;
+  color: #7380a7;
   border-radius: 999px 0 0 999px;
 }
 #solveBtn {
   margin-left: -16px;
-  padding-left: 28px;
-  color: #1737b8;
+  padding-left: 42px;
+  padding-right: 22px;
+  color: #1a3ac2;
   border-radius: 0 999px 999px 0;
 }
 .match-log {

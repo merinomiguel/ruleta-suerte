@@ -329,7 +329,7 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
 }
 .wheel-action-row > .action-btn:disabled {
-  opacity: .55;
+  opacity: .68;
   background: transparent;
   border-color: transparent;
   box-shadow: none;

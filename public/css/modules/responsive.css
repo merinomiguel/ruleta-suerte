@@ -105,9 +105,9 @@
   .wheel-action-row > .action-btn {
     align-self: end;
     min-height: 48px;
-    padding: 9px 10px;
-    font-size: .66rem;
-    line-height: 1.08;
+    padding: 8px 12px;
+    font-size: .64rem;
+    line-height: .98;
     transform: translateY(-4px);
   }
   .wheel-zone {
@@ -341,11 +341,13 @@
   }
   #vowelBtn {
     margin-right: -14px;
-    padding-right: 26px;
+    padding-left: 18px;
+    padding-right: 34px;
   }
   #solveBtn {
     margin-left: -14px;
-    padding-left: 26px;
+    padding-left: 34px;
+    padding-right: 18px;
   }
 }
 
@@ -832,8 +834,8 @@
     min-width: 0;
     min-height: 56px;
     padding-block: 8px;
-    font-size: .58rem;
-    line-height: 1.08;
+    font-size: .7rem;
+    line-height: .98;
     text-align: center;
     white-space: normal;
     transform: translateY(-4px);
@@ -841,16 +843,22 @@
   .wheel-action-row > .action-btn::after {
     display: none;
   }
+  .wheel-action-row > .action-btn .label-full { display: none; }
+  .wheel-action-row > .action-btn .label-short { display: block; }
+  .wheel-action-row > .action-btn small {
+    margin-top: 2px;
+    font-size: .78em;
+  }
   #vowelBtn {
-    margin-right: -10px;
-    padding-left: 6px;
-    padding-right: 16px;
+    margin-right: -42px;
+    padding-left: 24px;
+    padding-right: 20px;
     border-radius: 999px 0 0 999px;
   }
   #solveBtn {
-    margin-left: -10px;
-    padding-left: 16px;
-    padding-right: 6px;
+    margin-left: -42px;
+    padding-left: 20px;
+    padding-right: 24px;
     border-radius: 0 999px 999px 0;
   }
   .wheel-zone {
@@ -973,7 +981,7 @@
     border-color: transparent;
     box-shadow: none;
   }
-  .wheel-action-row > .action-btn:disabled { opacity: .55; }
+  .wheel-action-row > .action-btn:disabled { opacity: .68; }
   .letters-used {
     min-height: 24px;
     max-height: 28px;
@@ -1326,7 +1334,7 @@
   .wheel-action-row > .action-btn {
     min-height: 50px;
     padding-block: 6px;
-    font-size: .52rem;
+    font-size: .62rem;
     transform: translateY(-4px);
   }
   .wheel-action-row::before {
@@ -1338,14 +1346,14 @@
     display: none;
   }
   #vowelBtn {
-    margin-right: -8px;
-    padding-left: 4px;
-    padding-right: 12px;
+    margin-right: -32px;
+    padding-left: 18px;
+    padding-right: 15px;
   }
   #solveBtn {
-    margin-left: -8px;
-    padding-left: 12px;
-    padding-right: 4px;
+    margin-left: -32px;
+    padding-left: 15px;
+    padding-right: 18px;
   }
   .power-meter { width: min(238px, 68vw); }
   .turn-timer { width: 100%; }
