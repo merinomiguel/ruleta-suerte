@@ -9,7 +9,7 @@
   <meta name="color-scheme" content="light">
   <title>La Ruleta de la Suerte</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f7cff'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23ffd166'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2354f0c2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/css/styles.css?v=mobile-ux-3">
+  <link rel="stylesheet" href="/css/styles.css?v=mobile-ux-18">
 </head>
 <body>
   <main>
@@ -94,7 +94,7 @@
     <section id="gameScreen" class="screen hidden">
       <header class="topbar">
         <div class="mini-logo">LA RULETA <span>DE LA SUERTE</span></div>
-        <div class="top-actions"><button id="soundBtn" class="sound-btn" aria-label="Silenciar sonidos" title="Activar o silenciar sonidos">🔊</button><button id="exitGameBtn" class="sound-btn exit-game-btn" type="button" aria-label="Salir de la partida" title="Salir de la partida">×</button><div id="roomLabel" class="round-pill connection-pill hidden"></div><div id="roundLabel" class="round-pill">Panel 1/5</div></div>
+        <div class="top-actions"><button id="soundBtn" class="sound-btn" aria-label="Silenciar sonidos" title="Activar o silenciar sonidos">🔊</button><button id="exitGameBtn" class="sound-btn exit-game-btn" type="button" aria-label="Salir de la partida" title="Salir de la partida">×</button><div id="roomLabel" class="round-pill connection-pill hidden"></div><div id="roundLabel" class="round-pill">Panel 1/3</div></div>
       </header>
       <div class="game-grid">
         <section id="playersPanel" class="players-panel" aria-label="Jugadores">
@@ -102,25 +102,25 @@
             <div class="player-tag">Jugador 1</div><h2 id="playerName0">Jugador 1</h2>
             <div class="money-block"><small>Ronda</small><div id="roundMoney0" class="money">0 €</div></div>
             <div class="money-block"><small>Total</small><div id="totalMoney0" class="money total">0 €</div></div>
-            <div id="wildcard0" class="wildcard">Comodín x0</div>
+            <div id="wildcard0" class="wildcard hidden" aria-label="Tiene comodín">Comodín</div>
           </aside>
           <aside id="playerCard1" class="player-card">
             <div class="player-tag">Jugador 2</div><h2 id="playerName1">Jugador 2</h2>
             <div class="money-block"><small>Ronda</small><div id="roundMoney1" class="money">0 €</div></div>
             <div class="money-block"><small>Total</small><div id="totalMoney1" class="money total">0 €</div></div>
-            <div id="wildcard1" class="wildcard">Comodín x0</div>
+            <div id="wildcard1" class="wildcard hidden" aria-label="Tiene comodín">Comodín</div>
           </aside>
           <aside id="playerCard2" class="player-card hidden">
             <div class="player-tag">Jugador 3</div><h2 id="playerName2">Jugador 3</h2>
             <div class="money-block"><small>Ronda</small><div id="roundMoney2" class="money">0 €</div></div>
             <div class="money-block"><small>Total</small><div id="totalMoney2" class="money total">0 €</div></div>
-            <div id="wildcard2" class="wildcard">Comodín x0</div>
+            <div id="wildcard2" class="wildcard hidden" aria-label="Tiene comodín">Comodín</div>
           </aside>
           <aside id="playerCard3" class="player-card hidden">
             <div class="player-tag">Jugador 4</div><h2 id="playerName3">Jugador 4</h2>
             <div class="money-block"><small>Ronda</small><div id="roundMoney3" class="money">0 €</div></div>
             <div class="money-block"><small>Total</small><div id="totalMoney3" class="money total">0 €</div></div>
-            <div id="wildcard3" class="wildcard">Comodín x0</div>
+            <div id="wildcard3" class="wildcard hidden" aria-label="Tiene comodín">Comodín</div>
           </aside>
         </section>
 
@@ -136,6 +136,7 @@
           </div>
           <div class="turn-panel">
             <div id="status" class="status" role="status" aria-live="polite">Todo listo. ¡Gira la ruleta!</div>
+            <div id="eventBanner" class="event-banner hidden" aria-live="polite"></div>
             <div id="remoteBanner" class="remote-banner hidden" aria-live="polite"></div>
             <div id="turnTimer" class="turn-timer" aria-label="Temporizador de turno">
               <span id="timerLabel">TIEMPO</span>
@@ -143,26 +144,28 @@
               <strong id="timerValue">30s</strong>
             </div>
           </div>
-          <div class="spin-panel">
-            <div class="wheel-zone">
-              <div class="pointer" aria-hidden="true"></div>
-              <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
-              <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
+          <div class="wheel-action-row">
+            <button id="vowelBtn" class="action-btn secondary">COMPRAR VOCAL · 50 €</button>
+            <div class="spin-panel">
+              <div class="wheel-zone">
+                <div class="pointer" aria-hidden="true"></div>
+                <svg id="wheel" viewBox="0 0 300 300" role="img" aria-label="Ruleta de 24 gajos"></svg>
+                <div class="wheel-center" aria-hidden="true"><span>LA RULETA<small>DE LA SUERTE</small></span></div>
+              </div>
+              <div id="wheelResult" class="wheel-result hidden" aria-live="polite"></div>
+              <div id="spinHint" class="spin-hint hidden" aria-hidden="true"></div>
+              <div class="power-meter" aria-label="Fuerza del giro">
+                <div class="power-label"><span>Fuerza</span><span id="powerValue">Mantén pulsado</span></div>
+                <div id="forceBar" class="power-track"><div id="forceFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+              </div>
             </div>
-            <div id="wheelResult" class="wheel-result" aria-live="polite">Mantén para girar</div>
-            <div id="spinHint" class="spin-hint hidden" aria-hidden="true"></div>
-            <div class="power-meter" aria-label="Fuerza del giro">
-              <div class="power-label"><span>Fuerza</span><span id="powerValue">Mantén pulsado</span></div>
-              <div id="forceBar" class="power-track"><div id="forceFill" class="power-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-            </div>
+            <button id="solveBtn" class="action-btn resolve">RESOLVER PANEL</button>
           </div>
           <div class="actions">
-            <button id="vowelBtn" class="action-btn secondary">COMPRAR VOCAL · 50 €</button>
-            <button id="solveBtn" class="action-btn resolve">RESOLVER PANEL</button>
             <button id="passTurnBtn" class="action-btn pass-turn">PASAR TURNO</button>
           </div>
           <div id="choicePanel" class="choice-panel hidden"><p id="choiceTitle"></p><div id="keyboard" class="keyboard"></div></div>
-          <div class="letters-used"><span>Letras usadas</span><span id="usedLetters">—</span></div>
+          <div class="letters-used"><span>Usadas</span><span id="usedLetters">—</span></div>
         </section>
         <aside id="matchLog" class="match-log" aria-label="Historial de partida">
           <h3>Historial</h3>
@@ -185,6 +188,6 @@
   <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
 
-  <script type="module" src="/js/game/app.js?v=mobile-ux-4"></script>
+  <script type="module" src="/js/game/app.js?v=mobile-ux-14"></script>
 </body>
 </html>

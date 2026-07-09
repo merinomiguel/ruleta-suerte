@@ -1,4 +1,4 @@
-export const TOTAL_ROUNDS = 5;
+export const TOTAL_ROUNDS = 3;
 export const JACKPOT_ROUND = TOTAL_ROUNDS - 1;
 export const MAX_PLAYERS = 4;
 export const TURN_SECONDS = 30;

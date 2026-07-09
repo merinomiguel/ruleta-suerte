@@ -13,6 +13,7 @@
   -webkit-touch-callout: none;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  contain: layout paint;
 }
 .wheel-zone::before {
   content: "";
@@ -66,6 +67,8 @@
   display: block;
   cursor: grab;
   filter: drop-shadow(0 16px 22px rgba(8,20,64,.26));
+  transform-origin: 50% 50%;
+  transition: none;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -83,7 +86,7 @@
 }
 #wheel.charging {
   cursor: grabbing;
-  filter: drop-shadow(0 0 22px rgba(38,88,246,.5)) drop-shadow(0 18px 24px rgba(14,28,76,.26));
+  filter: drop-shadow(0 16px 22px rgba(8,20,64,.26));
 }
 #wheel text {
   font-family: Inter, sans-serif;
@@ -134,6 +137,7 @@
   font-size: .38rem;
 }
 .wheel-result {
+  display: none !important;
   width: fit-content;
   max-width: min(340px, 86vw);
   min-height: 32px;
@@ -176,18 +180,25 @@
   font-weight: 900;
 }
 .power-meter {
-  width: min(370px, 80vw);
-  margin: 0 auto 10px;
-  padding: 10px 12px 12px;
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 10px;
+  width: min(230px, 72vw);
+  margin: 0;
+  padding: 5px 7px;
+  display: none;
+  transform: translateX(-50%);
+  pointer-events: none;
   border: 1px solid rgba(255,255,255,.32);
-  border-radius: 16px;
+  border-radius: 999px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.94), rgba(229,237,255,.9));
-  box-shadow: 0 8px 0 rgba(15,40,120,.08), 0 16px 26px rgba(14,28,76,.13);
+  box-shadow: 0 8px 18px rgba(14,28,76,.14);
   transition: border-color .18s, box-shadow .18s, background .18s;
 }
 .power-label {
-  display: flex;
+  display: none;
   justify-content: space-between;
   margin-bottom: 6px;
   color: #26386e;
@@ -196,7 +207,7 @@
   text-transform: uppercase;
 }
 .power-track {
-  height: 14px;
+  height: 8px;
   overflow: hidden;
   border: 1px solid rgba(31,48,105,.16);
   border-radius: 999px;
@@ -212,15 +223,16 @@
   transition: width .04s linear;
 }
 #gameScreen.is-charging-spin .power-meter {
+  display: block;
   background: rgba(228,236,255,.98);
   border-color: rgba(38,88,246,.38);
-  box-shadow: 0 14px 28px rgba(38,88,246,.18);
+  box-shadow: 0 10px 22px rgba(38,88,246,.18);
 }
 #gameScreen.is-charging-spin .power-label span:first-child {
   color: var(--primary);
 }
 .actions {
-  display: flex;
+  display: none;
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
@@ -269,6 +281,9 @@
 #gameScreen.is-no-consonants .action-btn.pass-turn {
   display: inline-flex;
 }
+#gameScreen.is-no-consonants .actions {
+  display: flex;
+}
 
 @media (hover: none), (pointer: coarse), (max-width: 900px) {
   .wheel-zone {
@@ -297,6 +312,14 @@
   background: linear-gradient(135deg, #058b70, var(--accent));
   box-shadow: 0 12px 26px rgba(6,151,117,.3);
 }
+.wheel-action-row > .action-btn,
+#gameScreen.is-waiting-spin .wheel-action-row > .action-btn.resolve,
+#gameScreen.is-no-consonants .wheel-action-row > .action-btn.resolve,
+#gameScreen.is-solving .wheel-action-row > .action-btn.resolve {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
 .action-btn:disabled {
   opacity: .78;
   filter: none;
@@ -305,13 +328,21 @@
   border-color: rgba(31,48,105,.18);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
 }
+.wheel-action-row > .action-btn:disabled {
+  opacity: .55;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
 .letters-used {
-  margin-top: 10px;
-  padding: 9px 11px;
+  margin-top: 4px;
+  padding: 6px 8px;
   border: 1px solid rgba(255,255,255,.28);
   border-radius: var(--radius-sm);
   background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(233,241,255,.82));
   box-shadow: 0 8px 0 rgba(15,40,120,.07), var(--shadow-sm);
+  white-space: nowrap;
+  overflow: hidden;
 }
 .letters-used > span:first-child {
   color: #52608a;
@@ -321,6 +352,7 @@
   letter-spacing: .06em;
 }
 #usedLetters {
+  max-width: 100%;
   margin-left: 8px;
   display: inline-flex;
   flex-wrap: wrap;
@@ -329,6 +361,9 @@
   color: #3f4f7c;
   font-weight: 850;
   letter-spacing: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 .used-letter-chip {
   display: inline-grid;

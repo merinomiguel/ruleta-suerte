@@ -71,12 +71,16 @@ body {
   touch-action: manipulation;
 }
 body.playing {
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 body.playing main {
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible;
 }
 main { min-height: 100vh; min-height: 100dvh; }
 body::before {

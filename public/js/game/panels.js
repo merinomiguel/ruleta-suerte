@@ -1,4 +1,5 @@
 import { PANEL_DATA } from "../data/panels.js?v=board-resolve-1";
+import { TOTAL_ROUNDS } from "./config.js?v=mobile-ux-7";
 
 const DIFFICULTY_LABELS = {
   facil: "fácil",
@@ -93,5 +94,7 @@ export function selectProgressivePanels() {
     return takeFrom(mixedPool);
   }
 
-  return progression.map(difficulties => takeFromDifficulties(difficulties) || takeFrom(reserve) || source[0]);
+  return progression
+    .slice(0, TOTAL_ROUNDS)
+    .map(difficulties => takeFromDifficulties(difficulties) || takeFrom(reserve) || source[0]);
 }

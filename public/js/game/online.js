@@ -1,4 +1,4 @@
-import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js?v=mobile-ux-4";
+import { CONSONANTS, MAX_PLAYERS, TURN_SECONDS, VOWELS } from "./config.js?v=mobile-ux-7";
 import { getPlayerToken, rememberOnlineSeat, rememberedRoomCode, safeStorageGet, safeStorageRemove, safeStorageSet } from "./storage.js";
 
 export function createOnlineController(ctx) {
@@ -6,7 +6,7 @@ export function createOnlineController(ctx) {
     $, state, online, addHistory, buildWheel, chooseConsonant, chooseVowel,
     currentPlayer, hideChoices, render, renderHistory, resetTurnTimer, setStatus,
     showChoices, showFinal, showGameScreen, showStartScreen, stopTurnTimer,
-    updatePowerMeter, updateTimerDisplay, ensureTimerLoop, showTurnReadyModal
+    updatePowerMeter, updateTimerDisplay, ensureTimerLoop, showTurnReadyModal, setNarrator
   } = ctx;
 
   function setOnlineStatus(text,type="") {
@@ -139,7 +139,7 @@ export function createOnlineController(ctx) {
     const shortLabel=document.createElement("label"); shortLabel.className="setup-option lobby-setup-option";
     const shortInput=document.createElement("input"); shortInput.id="shortRoundToggle"; shortInput.type="checkbox"; shortInput.checked=Boolean(state.shortRound); shortInput.disabled=!online.isHost;
     shortInput.addEventListener("change",()=>{ state.shortRound=shortInput.checked; });
-    shortLabel.append(shortInput,document.createTextNode(" Ronda corta · turnos de 20s"));
+    shortLabel.append(shortInput,document.createTextNode(" Turnos rápidos · 20s"));
     settings.append(settingCopy,shortLabel);
     panel.appendChild(settings);
     const playersTitle=document.createElement("p"); playersTitle.className="lobby-players-title"; playersTitle.textContent="Jugadores conectados";
@@ -427,12 +427,15 @@ export function createOnlineController(ctx) {
       used: [...state.used], currentRotation: state.currentRotation, pendingWedge: state.pendingWedge,
       finished: state.finished, jackpot: state.jackpot, results: state.results,
       jackpotClaimed: state.jackpotClaimed, jackpotWinner: state.jackpotWinner,
-      jackpotClaimedAmount: state.jackpotClaimedAmount, choiceMode: state.choiceMode,
+      jackpotClaimedAmount: state.jackpotClaimedAmount,
+      jackpotCandidateIndex: state.jackpotCandidateIndex, jackpotCandidateName: state.jackpotCandidateName,
+      choiceMode: state.choiceMode,
       statusText: state.statusText, statusType: state.statusType, screen: state.screen,
       history: state.history, timerDeadline: state.timerDeadline, timerRemaining: state.timerRemaining,
       activity: state.activity, solveDraft: state.solveDraft,
       turnAwaitingAck: state.turnAwaitingAck, turnSeconds: state.turnSeconds, shortRound: state.shortRound,
-      turnId: state.turnId, turnAcceptedAt: state.turnAcceptedAt, turnAcceptedBy: state.turnAcceptedBy, turnPhase: state.turnPhase
+      turnId: state.turnId, turnAcceptedAt: state.turnAcceptedAt, turnAcceptedBy: state.turnAcceptedBy, turnPhase: state.turnPhase,
+      lastEvent: state.lastEvent
     };
   }
   function sendOnlineEvent(type,payload={}) {
@@ -498,7 +501,8 @@ export function createOnlineController(ctx) {
       const draft=String(event.draft||"").toUpperCase().replace(/\s+/g," ").slice(0,80);
       state.activity="solving"; state.solveDraft=draft; state.charging=false; state.spinning=false;
       stopTurnTimer();
-      setStatus(draft ? `${currentPlayer().name} escribe: ${draft}` : `${currentPlayer().name} está intentando resolver`,"spin-result");
+      setStatus(`${currentPlayer().name} está intentando resolver`,"spin-result");
+      setNarrator?.(`${currentPlayer().name} está resolviendo...`,"neutral","resolving_started");
       render();
       return;
     }
@@ -514,6 +518,7 @@ export function createOnlineController(ctx) {
         ? `${currentPlayer().name} responde "${attempt}" y acierta.`
         : `${currentPlayer().name} responde "${attempt}" y falla.`,
         correct ? "good" : "bad");
+      setNarrator?.(correct ? `${currentPlayer().name} ha resuelto el panel.` : `${currentPlayer().name} ha fallado al resolver.`, correct ? "success" : "danger", correct ? "resolving_success" : "resolving_failed");
       addHistory(correct
         ? `${currentPlayer().name} respondió "${attempt}" y acertó`
         : `${currentPlayer().name} respondió "${attempt}" y falló`,
@@ -527,8 +532,11 @@ export function createOnlineController(ctx) {
     state.used=new Set(snapshot.used||[]); state.currentRotation=snapshot.currentRotation||0; state.pendingWedge=snapshot.pendingWedge||null;
     state.finished=Boolean(snapshot.finished); state.jackpot=snapshot.jackpot||0; state.results=snapshot.results||[];
     state.jackpotClaimed=Boolean(snapshot.jackpotClaimed); state.jackpotWinner=snapshot.jackpotWinner||""; state.jackpotClaimedAmount=snapshot.jackpotClaimedAmount||0;
+    state.jackpotCandidateIndex=Number.isFinite(Number(snapshot.jackpotCandidateIndex)) ? Number(snapshot.jackpotCandidateIndex) : -1;
+    state.jackpotCandidateName=snapshot.jackpotCandidateName||"";
     state.choiceMode=snapshot.choiceMode||""; state.statusText=snapshot.statusText||""; state.statusType=snapshot.statusType||""; state.screen=snapshot.screen||"game";
     state.history=snapshot.history||[];
+    state.lastEvent=snapshot.lastEvent||null;
     state.timerDeadline=snapshot.timerDeadline||0; state.timerRemaining=snapshot.timerRemaining||TURN_SECONDS; state.activity=snapshot.activity||""; state.solveDraft=snapshot.solveDraft||"";
     state.turnAwaitingAck=Boolean(snapshot.turnAwaitingAck);
     state.turnSeconds=snapshot.turnSeconds||TURN_SECONDS;
