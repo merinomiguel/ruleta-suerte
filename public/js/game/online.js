@@ -448,8 +448,7 @@ export function createOnlineController(ctx) {
   }
   function applyRealtimeEvent(event={},senderIndex=-1) {
     if (!online.enabled || !online.started || state.screen!=="game" || state.finished) return;
-    if (typeof senderIndex==="number" && senderIndex!==activeSlotIndex()) return;
-    if (onlineCanAct()) return;
+    if (typeof senderIndex==="number" && senderIndex===online.playerIndex) return;
     if (event.type==="wheel_charge") {
       state.activity="charging"; state.charging=true; state.spinning=false;
       $("wheel").classList.add("charging");
@@ -497,12 +496,25 @@ export function createOnlineController(ctx) {
       state.spinning=false;
       return;
     }
+    if (event.type==="letter_result") {
+      const letter=String(event.letter||"").toUpperCase().replace(/[^A-ZÑ]/g,"").slice(0,1);
+      const count=Number(event.count)||0;
+      const statusMessage=String(event.statusMessage||"").trim().slice(0,160);
+      const narratorMessage=String(event.narratorMessage||statusMessage).trim().slice(0,160);
+      const severity=event.severity==="success" ? "success" : "danger";
+      if (letter) state.lastRevealed=letter;
+      setStatus(statusMessage || (count>0 ? `${letter} aparece ${count} ${count===1?"vez":"veces"}.` : `No hay ${letter}.`), severity==="success" ? "good" : "bad");
+      setNarrator?.(narratorMessage, severity, count>0 ? "letter_correct" : "letter_wrong");
+      render();
+      setTimeout(()=>{ if (state.lastRevealed===letter) state.lastRevealed=null; },650);
+      return;
+    }
     if (event.type==="solve_draft") {
       const draft=String(event.draft||"").toUpperCase().replace(/\s+/g," ").slice(0,80);
       state.activity="solving"; state.solveDraft=draft; state.charging=false; state.spinning=false;
       stopTurnTimer();
       setStatus(`${currentPlayer().name} está intentando resolver`,"spin-result");
-      setNarrator?.(`${currentPlayer().name} está resolviendo...`,"neutral","resolving_started");
+      setNarrator?.(draft ? `${currentPlayer().name} escribe: "${draft}"` : `${currentPlayer().name} está resolviendo...`,"neutral","resolving_started");
       render();
       return;
     }
@@ -551,7 +563,13 @@ export function createOnlineController(ctx) {
     $("wheel").style.transform=`rotate(${state.currentRotation}deg)`; buildWheel();
     $("modalBackdrop").classList.add("hidden");
     if (state.screen==="final") showFinal(false);
-    else { showGameScreen(); render(); setStatus(state.statusText,state.statusType); renderHistory(); if (state.turnAwaitingAck && onlineCanAct()) showTurnReadyModal(); }
+    else {
+      showGameScreen(); render(); setStatus(state.statusText,state.statusType);
+      if (state.activity==="solving" && state.solveDraft && !onlineCanAct()) {
+        setNarrator?.(`${currentPlayer().name} escribe: "${state.solveDraft}"`,"neutral","resolving_started");
+      }
+      renderHistory(); if (state.turnAwaitingAck && onlineCanAct()) showTurnReadyModal();
+    }
     const restored=restorePendingActionAfterReconnect();
     online.applyingRemote=false;
     if (restored) syncOnline("restore_turn");

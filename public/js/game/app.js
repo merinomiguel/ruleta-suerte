@@ -7,7 +7,7 @@ import { createEffects } from "./effects.js?v=mobile-perf-1";
 import { normalize, money } from "./format.js";
 import { createHistory } from "./history.js";
 import { selectProgressivePanels } from "./panels.js?v=board-resolve-3";
-import { createOnlineController } from "./online.js?v=mobile-ux-7";
+import { createOnlineController } from "./online.js?v=mobile-ux-9";
 import { createWheel } from "./wheel.js?v=mobile-ux-7";
 
 const state = {
@@ -861,14 +861,19 @@ function chooseConsonant(letter) {
       const gain=w.value*count; p.roundMoney+=gain; detail=`+${money(w.value)} × ${count} = ${money(gain)}.`; moneyChanged=true;
     }
     addHistory(`${p.name} eligió ${letter}: ${count} acierto${count>1?"s":""}`,"letter");
-    resetTurnTimer(); sfx("good"); setStatus(`Correcto: ${letter} aparece ${count} ${count===1?"vez":"veces"}. ${detail}`,"good"); setNarrator(w.type==="x2" || w.type==="half" || w.type==="jackpot" ? detail : `${letter} aparece ${count} ${count===1?"vez":"veces"}. ${detail}`,"success","letter_correct"); render();
+    const statusMessage=`Correcto: ${letter} aparece ${count} ${count===1?"vez":"veces"}. ${detail}`;
+    const narratorMessage=w.type==="x2" || w.type==="half" || w.type==="jackpot" ? detail : `${letter} aparece ${count} ${count===1?"vez":"veces"}. ${detail}`;
+    resetTurnTimer(); sfx("good"); setStatus(statusMessage,"good"); setNarrator(narratorMessage,"success","letter_correct"); render();
+    sendOnlineEvent("letter_result", { letter, count, statusMessage, narratorMessage, severity:"success" });
     if (moneyChanged) pulseId(`roundMoney${state.active}`,"money-bump");
     pulseCurrentPlayer("feedback-positive");
     setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("consonant");
   } else {
     addHistory(`${p.name} eligió ${letter}: no está`,"bad");
     const message=`${letter} no está. ${p.name} pierde el turno.`;
-    stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}.`,"bad"); setNarrator(message,"danger","letter_wrong"); render(); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard({ type:"letter_wrong", reason:"consonante fallida", message });
+    stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}.`,"bad"); setNarrator(message,"danger","letter_wrong"); render();
+    sendOnlineEvent("letter_result", { letter, count, statusMessage:`No hay ${letter}.`, narratorMessage:message, severity:"danger" });
+    animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard({ type:"letter_wrong", reason:"consonante fallida", message });
   }
 }
 
@@ -883,8 +888,21 @@ function buyVowel() {
 function chooseVowel(letter) {
   if (!canUseTurnAction() || state.choiceMode!=="vowel") { rejectBlockedTurnAction(); return; }
   hideChoices(); const p=currentPlayer(); p.roundMoney-=50; state.used.add(letter); const count=occurrences(letter);
-  if (count>0) { state.lastRevealed=letter; addHistory(`${p.name} compró ${letter}: ${count} acierto${count>1?"s":""}`,"vowel"); resetTurnTimer(); sfx("good"); setStatus(`Correcto: ${letter} aparece ${count} ${count===1?"vez":"veces"}. La vocal ha costado 50 €.`,"good"); setNarrator(`${p.name} compra ${letter}. ${letter} aparece ${count} ${count===1?"vez":"veces"}.`,"success","letter_correct"); render(); pulseId(`roundMoney${state.active}`,"money-lost"); pulseCurrentPlayer("feedback-positive"); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("vowel"); }
-  else { const message=`${letter} no está. ${p.name} pierde el turno.`; addHistory(`${p.name} compró ${letter}: no está`,"bad"); stopTurnTimer(); sfx("bad"); setStatus(`No hay ${letter}. Pierdes 50 €.`,"bad"); setNarrator(message,"danger","letter_wrong"); render(); pulseId(`roundMoney${state.active}`,"money-lost"); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard({ type:"vowel_wrong", reason:"vocal fallida", message }); }
+  if (count>0) {
+    state.lastRevealed=letter; addHistory(`${p.name} compró ${letter}: ${count} acierto${count>1?"s":""}`,"vowel");
+    const statusMessage=`Correcto: ${letter} aparece ${count} ${count===1?"vez":"veces"}. La vocal ha costado 50 €.`;
+    const narratorMessage=`${p.name} compra ${letter}. ${letter} aparece ${count} ${count===1?"vez":"veces"}.`;
+    resetTurnTimer(); sfx("good"); setStatus(statusMessage,"good"); setNarrator(narratorMessage,"success","letter_correct"); render();
+    sendOnlineEvent("letter_result", { letter, count, statusMessage, narratorMessage, severity:"success" });
+    pulseId(`roundMoney${state.active}`,"money-lost"); pulseCurrentPlayer("feedback-positive"); setTimeout(()=>state.lastRevealed=null,650); checkAutoSolved(); syncOnline("vowel");
+  }
+  else {
+    const message=`${letter} no está. ${p.name} pierde el turno.`;
+    const statusMessage=`No hay ${letter}. Pierdes 50 €.`;
+    addHistory(`${p.name} compró ${letter}: no está`,"bad"); stopTurnTimer(); sfx("bad"); setStatus(statusMessage,"bad"); setNarrator(message,"danger","letter_wrong"); render();
+    sendOnlineEvent("letter_result", { letter, count, statusMessage, narratorMessage:message, severity:"danger" });
+    pulseId(`roundMoney${state.active}`,"money-lost"); animateElement("board","miss-shake"); pulseCurrentPlayer("feedback-negative"); offerWildcard({ type:"vowel_wrong", reason:"vocal fallida", message });
+  }
 }
 function checkAutoSolved() {
   const remaining=LETTERS.some(l=>currentPanel().answer.includes(l)&&!state.used.has(l));
