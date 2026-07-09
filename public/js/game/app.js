@@ -143,7 +143,7 @@ function renderNarrator() {
   const el=$("eventBanner");
   if (!el) return;
   const event=state.lastEvent;
-  const hidden=!event?.message || Boolean(statusFeedbackText());
+  const hidden=!event?.message;
   el.classList.toggle("hidden",hidden);
   el.textContent=hidden ? "" : event.message;
   el.className=`event-banner ${event?.severity || "neutral"} ${hidden ? "hidden" : ""}`.trim();
@@ -276,9 +276,8 @@ function getTurnStatusUI(options={}) {
   const playerName=player?.name || "Jugador";
   const notMyTurn=state.players.length ? !onlineCanAct() : false;
   const canChooseConsonant=options.canChooseConsonant ?? (availableConsonants().length>0 && hiddenConsonants().length>0);
-  const feedback=statusFeedbackText();
+  const feedback=state.lastEvent?.message ? "" : statusFeedbackText();
   const turnText=`Turno de ${playerName}`;
-  const waitingText="Esperando a que juegue";
   const wheelChip=getWheelActionChip(options);
   const ui={
     primaryText: feedback || turnText,
@@ -299,7 +298,6 @@ function getTurnStatusUI(options={}) {
   if (state.turnAwaitingAck) {
     ui.primaryText=notMyTurn ? turnText : (feedback || turnText);
     ui.primaryType=notMyTurn ? "" : ui.primaryType;
-    ui.secondaryText=notMyTurn ? waitingText : "";
     ui.timerLabel=notMyTurn ? "Tiempo" : "Listo";
     return ui;
   }
@@ -310,18 +308,15 @@ function getTurnStatusUI(options={}) {
   }
   if (state.activity==="solving") {
     ui.primaryText=feedback || (notMyTurn ? `${playerName} está intentando resolver` : "Resolver panel");
-    ui.secondaryText=notMyTurn ? waitingText : "";
     ui.timerLabel="Pausa";
     return ui;
   }
   if (state.spinning || state.activity==="spinning") {
     ui.primaryText=feedback || (notMyTurn ? `${playerName} está girando la ruleta` : "Girando la ruleta");
-    ui.secondaryText=notMyTurn ? waitingText : "";
     return ui;
   }
   if (state.charging || state.activity==="charging") {
     ui.primaryText=feedback || (notMyTurn ? `${playerName} está cargando la ruleta` : "Cargando fuerza");
-    ui.secondaryText=notMyTurn ? waitingText : "";
     return ui;
   }
   if (notMyTurn) {
@@ -341,8 +336,11 @@ function renderTurnStatus(ui=getTurnStatusUI()) {
   const status=$("status");
   if (status) {
     const type=ui.primaryType || "";
+    const narratorVisible=Boolean(state.lastEvent?.message);
+    const redundantTurn=statusIsTurnOnly(ui.primaryText);
     status.textContent=ui.primaryText;
     status.className=`status ${type} ${feedbackClass(type)}`.trim();
+    status.classList.toggle("hidden",narratorVisible || redundantTurn);
   }
   const secondary=$("remoteBanner");
   if (secondary) {
@@ -494,18 +492,23 @@ function render() {
   $("category").textContent=currentPanel().categoria;
   $("difficulty").textContent=currentPanel().dificultad;
   $("clue").textContent=currentPanel().clue;
-  $("jackpot").classList.remove("hidden"); $("jackpot").classList.toggle("compact",state.round!==JACKPOT_ROUND);
+  const showJackpot=state.round===JACKPOT_ROUND || state.jackpotClaimed || state.jackpotCandidateIndex>=0;
+  $("jackpot").classList.toggle("hidden",!showJackpot);
+  $("jackpotRule").classList.toggle("hidden",!showJackpot);
+  $("jackpot").classList.toggle("compact",false);
   $("jackpot").classList.toggle("claimed",state.jackpotClaimed);
-  $("jackpot").textContent=state.jackpotClaimed
-    ? `🏆 BOTE GANADO: ${money(state.jackpotClaimedAmount)} · ${state.jackpotWinner}`
-    : state.jackpotCandidateIndex>=0
-      ? `🎯 BOTE ACTIVADO: ${state.jackpotCandidateName}`
-      : `🎯 ${state.round===JACKPOT_ROUND?"BOTE":"BOTE FINAL"}: ${money(state.jackpot)}`;
-  $("jackpotRule").textContent=state.jackpotClaimed
-    ? "EL BOTE YA HA SIDO COBRADO"
-    : state.jackpotCandidateIndex>=0
-      ? "RESUELVE EL PANEL PARA COBRARLO"
-      : state.round===JACKPOT_ROUND?"CAE EN BOTE Y RESUELVE PARA COBRARLO":"CRECE 100 € POR PANEL";
+  if (showJackpot) {
+    $("jackpot").textContent=state.jackpotClaimed
+      ? `🏆 BOTE GANADO: ${money(state.jackpotClaimedAmount)} · ${state.jackpotWinner}`
+      : state.jackpotCandidateIndex>=0
+        ? `🎯 BOTE ACTIVADO: ${money(state.jackpot)} · ${state.jackpotCandidateName}`
+        : `🎯 BOTE: ${money(state.jackpot)}`;
+    $("jackpotRule").textContent=state.jackpotClaimed
+      ? "EL BOTE YA HA SIDO COBRADO"
+      : state.jackpotCandidateIndex>=0
+        ? "RESUELVE EL PANEL PARA COBRARLO"
+        : "CAE EN BOTE Y RESUELVE PARA COBRARLO";
+  }
   for (let i=0;i<MAX_PLAYERS;i++) {
     const card=$("playerCard"+i), p=state.players[i];
     card.classList.toggle("hidden",!p);
@@ -663,14 +666,20 @@ function startVoiceDictation(input) {
 }
 function setStatus(text,type="") {
   state.statusText=text; state.statusType=type;
+  if (!online.applyingRemote && state.screen==="game" && state.players.length && text && type && !statusIsTurnOnly(text)) {
+    setNarrator(text,type==="good"?"success":type==="bad"?"danger":"neutral","status");
+  }
   const el=$("status");
   if (state.screen==="game" && state.players.length) renderTurnStatus();
   else {
     el.textContent=text;
     el.className=`status ${type} ${feedbackClass(type)}`.trim();
+    el.classList.toggle("hidden",statusIsTurnOnly(text));
   }
-  el.classList.add("status-ping");
-  setTimeout(() => el.classList.remove("status-ping"), 460);
+  if (!el.classList.contains("hidden")) {
+    el.classList.add("status-ping");
+    setTimeout(() => el.classList.remove("status-ping"), 460);
+  }
 }
 function hideChoices() { state.choosing=false; state.choiceMode=""; state.activity=""; $("choicePanel").classList.add("hidden"); $("keyboard").innerHTML=""; }
 function showChoices(letters,title,handler,kind="",options={}) {
@@ -1054,9 +1063,8 @@ function finishRound(winnerIndex) {
   const boteLine=last?state.jackpotClaimed
     ? `<br><strong>${state.jackpotWinner}</strong> cobra el bote de <strong>${money(state.jackpotClaimedAmount)}</strong> al resolver el panel.`
     : `<br>El bote queda desierto: había que caer en BOTE y resolver el panel.`:"";
-  const growthLine=!last?`<br>El bote final crece 100 € y alcanza <strong>${money(state.jackpot)}</strong>.`:"";
   $("modal").className="modal panel-complete-modal";
-  $("modal").innerHTML=`<div class="modal-icon">${last?"🏁":"✨"}</div><h2>Panel resuelto</h2><p>La respuesta era: <strong>“${currentPanel().answer}”</strong><br><strong>${winner.name}</strong> suma <strong>${money(earned)}</strong> del panel.${boteLine}${growthLine}<br><br>Marcador: ${scoreboardLine()}</p><button id="nextRound" class="modal-btn">${last?"VER RESULTADO":"SIGUIENTE PANEL →"}</button>`;
+  $("modal").innerHTML=`<div class="modal-icon">${last?"🏁":"✨"}</div><h2>Panel resuelto</h2><p>La respuesta era: <strong>“${currentPanel().answer}”</strong><br><strong>${winner.name}</strong> suma <strong>${money(earned)}</strong> del panel.${boteLine}<br><br>Marcador: ${scoreboardLine()}</p><button id="nextRound" class="modal-btn">${last?"VER RESULTADO":"SIGUIENTE PANEL →"}</button>`;
   $("modalBackdrop").classList.remove("hidden");
   $("nextRound").addEventListener("click",()=>{ $("modalBackdrop").classList.add("hidden"); if(last) showFinal(); else { state.round++; state.finished=false; beginRound(); syncOnline("next_round"); } });
 }

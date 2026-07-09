@@ -797,9 +797,9 @@
     font-size: .55rem;
   }
   .event-banner {
-    min-height: 27px;
-    padding: 5px 8px;
-    font-size: .66rem;
+    min-height: 44px;
+    padding: 6px 9px;
+    font-size: .72rem;
     line-height: 1.1;
   }
   .turn-timer {
@@ -829,6 +829,12 @@
     height: 58px;
     transform: none;
   }
+  .wheel-action-row::after {
+    left: 8px;
+    right: 8px;
+    bottom: 11px;
+    height: 42px;
+  }
   .wheel-action-row > .action-btn {
     align-self: end;
     min-width: 0;
@@ -843,8 +849,8 @@
   .wheel-action-row > .action-btn::after {
     display: none;
   }
-  .wheel-action-row > .action-btn .label-full { display: none; }
-  .wheel-action-row > .action-btn .label-short { display: block; }
+  .wheel-action-row > .action-btn .label-full { display: block; }
+  .wheel-action-row > .action-btn .label-short { display: none; }
   .wheel-action-row > .action-btn small {
     margin-top: 2px;
     font-size: .78em;
@@ -981,13 +987,13 @@
     border-color: transparent;
     box-shadow: none;
   }
-  .wheel-action-row > .action-btn:disabled { opacity: .68; }
+  .wheel-action-row > .action-btn:disabled { opacity: .8; }
   .letters-used {
-    min-height: 24px;
-    max-height: 28px;
+    min-height: 32px;
+    max-height: 34px;
     overflow: hidden;
     margin-top: 0;
-    padding: 4px 7px;
+    padding: 5px 7px;
     border-radius: var(--radius-xs);
     white-space: nowrap;
     box-shadow: none;
@@ -1232,7 +1238,7 @@
   }
 }
 
-@media (max-width: 380px), (max-height: 720px) {
+@media (max-width: 380px), (max-width: 900px) and (max-height: 720px) {
   .modal.solve-modal {
     padding: 8px;
     border-radius: 14px;
@@ -1342,6 +1348,12 @@
     bottom: 4px;
     height: 52px;
   }
+  .wheel-action-row::after {
+    left: 6px;
+    right: 6px;
+    bottom: 10px;
+    height: 38px;
+  }
   .wheel-action-row > .action-btn::after {
     display: none;
   }
@@ -1372,14 +1384,14 @@
     font-size: .62rem;
   }
   .letters-used {
-    min-height: 21px;
-    max-height: 21px;
-    padding-block: 3px;
+    min-height: 30px;
+    max-height: 32px;
+    padding-block: 5px;
   }
   .used-letter-chip {
-    min-width: 17px;
-    height: 17px;
-    font-size: .54rem;
+    min-width: 19px;
+    height: 20px;
+    font-size: .58rem;
   }
   .remote-banner {
     display: block;
