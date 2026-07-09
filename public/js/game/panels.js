@@ -64,10 +64,8 @@ function shuffle(items) {
 export function selectProgressivePanels() {
   const progression = [
     ["fácil", "media"],
-    ["fácil", "media"],
-    ["media"],
-    ["media"],
-    ["difícil"]
+    ["fácil", "media", "difícil"],
+    ["fácil", "media", "difícil"]
   ];
   const source = PANELS.length ? PANELS : [normalizePanel(FALLBACK_PANEL, -1)];
   const pools = {
